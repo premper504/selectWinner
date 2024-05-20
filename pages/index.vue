@@ -217,7 +217,7 @@
               <el-input v-model="input" style="width: 240px; height: 40px;" placeholder="Correo electrónico" />
 
               <a href="#" class="button lithtext form w-button">ENVIAR</a>
-            </div>
+            </div>  
           </div>
         </div>
       </div>
