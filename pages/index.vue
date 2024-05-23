@@ -4,6 +4,7 @@
       v-model="dialogVisible"
       title="Solicitud para ser Distribuidor"
       @close="handleClose"
+      :style="{ width: isMobile ? '90%' : '50%' }"
     >
       <div>
         <el-form :model="form" :rules="rules" ref="formRef" label-width="250px" style="font-size: 13px; padding-top: 20px">
@@ -39,14 +40,14 @@
       </template>
     </ElDialog>
 
-    <div ref="menu" class="menu-hidden" style="position: fixed; background-color: white; width: 100%; z-index: 40000;">
+    <div ref="menu" class="menu-hidden" style="position: fixed; background-color:#7DB251; width: 100%; z-index: 40000; padding-bottom:6px; padding-top:7px;">
       <div class="menu" style="max-width: 1100px;">
         <img src="/images/sulalogo.svg" loading="lazy" alt="" style="margin-right: 30px">
         <div class="menulist">
-          <a href="#" style="color:#3157d8" class="itemmenu">HOME</a>
-          <a href="#" style="color:#3157d8" class="itemmenu">PRODUCTOS</a>
-          <a href="#recetas" style="color:#3157d8" class="itemmenu">RECETAS</a>
-          <a href="#" style="color:#3157d8" class="itemmenu">ENCUÉNTRANOS</a>
+          <a href="#" style="color: white" class="itemmenu">HOME</a>
+          <a href="#" style="color:white" class="itemmenu">PRODUCTOS</a>
+          <a href="#recetas" style="color:white" class="itemmenu">RECETAS</a>
+          <a href="#" style="color:white" class="itemmenu">ENCUÉNTRANOS</a>
           <a @click="handleOpen" class="button w-button">SEA DISTRIBUIDOR</a>
         </div>
         <div class="div-block-11">
@@ -99,7 +100,7 @@
                     <img src="/images/nectar.png" loading="lazy" width="366" sizes="(max-width: 479px) 76vw, (max-width: 767px) 59vw, 32vw" alt="" srcset="/images/nectar-p-500.png 500w, /images/nectar.png 692w" class="image nectar">
                   </div>
                   <div style="opacity:1;-webkit-transform:translate3d(0px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(0px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(0px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(0px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0)" class="div-block-2 ladoright textslider">
-                    <h1 class="heading nectar">DELICIA <br>NATURAL EN<br>TU MESA</h1>
+                    <h1 class="heading nectar" style="max-width:100%">TRES SABORES <br> QUE SON UNA DELICIA<br>NATURAL EN TU MESA</h1>
                   </div>
                 </div>
               </div>
@@ -256,6 +257,13 @@ const { $supabase } = useNuxtApp()
 
 const dialogVisible = ref(false)
 const input = ref('')
+const isMobile = ref(false);
+
+
+const checkScreenWidth = () => {
+  const screenWidth = window.innerWidth;
+  isMobile.value = screenWidth < 600;
+};
 
 const form = ref({
   businessName: '',
@@ -361,12 +369,19 @@ const handleScroll = () => {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
+  checkScreenWidth();
+  window.addEventListener('resize', checkScreenWidth);
 })
 
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('resize', checkScreenWidth);
+
 })
 </script>
+
+
+
 
 <style>
 .el-form-item__label {
@@ -382,4 +397,11 @@ onBeforeUnmount(() => {
 .menu-visible {
   display: flex;
 }
+
+
+.el-form-item {
+  flex-direction:column;
+  }
+
+
 </style>
