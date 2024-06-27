@@ -4,11 +4,11 @@ import { defineNuxtConfig } from 'nuxt/config'
 export default defineNuxtConfig({
   app: {
     head: {
-      title: 'sulaFBC',
+      title: 'Ceteco  Busca a los 12 soñadores del mundo',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'generator', content: 'Webflow' },
-        { hid: 'description', name: 'description', content: 'My awesome Nuxt3 app' }
+        { name: 'generator', content: 'Mou CMS' },
+        { hid: 'description', name: 'description', content: 'Ceteco  Busca a los 12 soñadores del mundo' }
       ],
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
@@ -16,7 +16,7 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
         { rel: 'stylesheet', href: '/css/normalize.css' },
         { rel: 'stylesheet', href: '/css/webflow.css' },
-        { rel: 'stylesheet', href: '/css/sulafbc.webflow.css' },
+        { rel: 'stylesheet', href: '/css/ceteco.webflow.css' },
         {
           rel: 'stylesheet',
           href: 'https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Open+Sans:wght@500&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap'

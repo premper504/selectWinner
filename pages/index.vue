@@ -1,326 +1,185 @@
 <template>
-  <div>
+
+
+  <body class="body">
     <ElDialog
       v-model="dialogVisible"
-      title="Solicitud para ser Distribuidor"
+      title="Información del Niño/a"
       @close="handleClose"
       :style="{ width: isMobile ? '90%' : '50%' }"
     >
       <div>
+
+
+
         <el-form :model="form" :rules="rules" ref="formRef" label-width="250px" style="font-size: 13px; padding-top: 20px">
-          <el-form-item label="Nombre del negocio" prop="businessName">
-            <el-input v-model="form.businessName"></el-input>
+          <el-form-item label="Nombre de hijo/a" prop="name">
+            <el-input v-model="form.name"></el-input>
           </el-form-item>
-          <el-form-item label="Nombre del contacto" prop="contactName">
-            <el-input v-model="form.contactName"></el-input>
-          </el-form-item>
-          <el-form-item label="Dirección" prop="address">
-            <el-input v-model="form.address"></el-input>
-          </el-form-item>
-          <el-form-item label="Estado" prop="state">
-            <el-input v-model="form.state"></el-input>
-          </el-form-item>
-          <el-form-item label="Celular" prop="phone">
-            <el-input v-model="form.phone"></el-input>
-          </el-form-item>
-          <el-form-item label="Email" prop="email">
+          <el-form-item label="Correo electrónico" prop="email">
             <el-input v-model="form.email"></el-input>
           </el-form-item>
-          <el-form-item style="line-height: 10px;" label="¿En cuáles de nuestros productos estás interesado?" prop="products">
-            <el-input v-model="form.products"></el-input>
+          <el-form-item label="Edad" prop="edad">
+            <el-input v-model="form.edad"></el-input>
+          </el-form-item>
+          <el-form-item label="Ciudad" prop="ciudad">
+            <el-input v-model="form.ciudad"></el-input>
+          </el-form-item>
+          <el-form-item label="Nombre de los padres" prop="parents">
+            <el-input v-model="form.nombre_padres"></el-input>
+          </el-form-item>
+          <el-form-item label="Número de identidad" prop="numero_de_identidad">
+            <el-input v-model="form.numero_de_identidad"></el-input>
+          </el-form-item>
+          <el-form-item label="Celular" prop="telefono">
+            <el-input v-model="form.telefono"></el-input>
+          </el-form-item>
+          <el-form-item style="line-height: 10px;" label="Tipo de leche" prop="tipo_leche">
+            <el-input v-model="form.tipo_leche"></el-input>
+          </el-form-item>
+          <el-form-item style="line-height: 10px;" label="Cuál es el mayor sueño de tu hijo/a" prop="pregunta">
+            <el-input v-model="form.pregunta"></el-input>
           </el-form-item>
         </el-form>
+      </div>
+
+      <div>
+        <p>Agregar fotografía de tu niño posando originalmente</p>
+        <el-upload
+          action="#"
+          list-type="picture-card"
+          :auto-upload="false"
+          :limit="1"
+          :file-list="fileList"
+          :on-change="handleFileChange"
+          :on-remove="handleRemove"
+          :on-exceed="handleExceed"
+        >
+          <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
+            <el-icon><Plus /></el-icon>
+          </div>
+        </el-upload>
       </div>
 
       <template #footer>
         <span class="dialog-footer">
           <ElButton @click="handleClose">Cancelar</ElButton>
-          <ElButton type="primary" @click="handleConfirm">Confirmar</ElButton>
+          <ElButton type="primary" @click="handleConfirm()">Continuar</ElButton>
         </span>
       </template>
     </ElDialog>
 
-    <div ref="menu" class="menu-hidden" style="position: fixed; background-color:#7DB251; width: 100%; z-index: 40000; padding-bottom:6px; padding-top:7px;">
-      <div class="menu" style="max-width: 1100px;">
-        <img src="/images/sulalogo.svg" loading="lazy" alt="" style="margin-right: 30px">
-        <div class="menulist">
-          <a href="#" style="color: white" class="itemmenu">HOME</a>
-          <a href="#" style="color:white" class="itemmenu">PRODUCTOS</a>
-          <a href="#recetas" style="color:white" class="itemmenu">RECETAS</a>
-          <a href="#" style="color:white" class="itemmenu">ENCUÉNTRANOS</a>
-          <a @click="handleOpen" class="button w-button">SEA DISTRIBUIDOR</a>
+    <div class="webcontainer">
+      <div class="backhistorieta">
+        <div class="containertitle">
+          <img src="../public/images/locoCeteco.png" loading="lazy" sizes="(max-width: 479px) 85vw, 160px" srcset="../public/images/locoCeteco-p-500.png 500w, ../public/images/locoCeteco-p-800.png 800w, ../public/images/locoCeteco.png 1036w" alt="" class="logoceteco">
+          <img src="../public/images/Clip-path-group.svg" loading="lazy" alt="" class="logobusca12">
         </div>
-        <div class="div-block-11">
-          <img src="/images/MENU.svg" loading="lazy" alt="" class="image-7">
+        <div class="containerkids">
+          <img src="../public/images/girl.png" loading="lazy" sizes="(max-width: 479px) 100vw, (max-width: 767px) 250px, (max-width: 991px) 320px, 400px" srcset="../public/images/girl-p-500.png 500w, ../public/images/girl.png 686w" alt="" class="girl">
+          <img src="../public/images/boyCeteco.png" loading="lazy" sizes="(max-width: 479px) 100vw, (max-width: 767px) 220px, (max-width: 991px) 280px, 37vw" srcset="../public/images/boyCeteco-p-500.png 500w, ../public/images/boyCeteco.png 628w" alt="" class="boy">
         </div>
       </div>
-    </div>
-
-    <section class="header">
-      <div class="contendorcontent widthslide">
-        <div class="menu">
-          <img src="/images/sulalogo.svg" loading="lazy" alt="" style="margin-right: 30px">
-          <div class="menulist">
-            <a href="#" class="itemmenu">HOME</a>
-            <a href="#" class="itemmenu">PRODUCTOS</a>
-            <a href="#recetas" class="itemmenu">RECETAS</a>
-            <a href="#" class="itemmenu">ENCUÉNTRANOS</a>
-            <a @click="handleOpen" class="button w-button">SEA DISTRIBUIDOR</a>
-          </div>
-          <div class="div-block-11">
-            <img src="/images/MENU.svg" loading="lazy" alt="" class="image-7">
-          </div>
-        </div>
-        <div class="slider">
-          <div data-delay="4000" data-animation="slide" class="slider-2 w-slider" data-autoplay="true" data-easing="ease" data-hide-arrows="false" data-disable-swipe="false" data-autoplay-limit="0" data-nav-spacing="3" data-duration="400" data-infinite="true">
-            <div class="w-slider-mask">
-              <div class="slide w-slide">
-                <div class="distribuidor">
-                  <div style="-webkit-transform:translate3d(0, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(0, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(0, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(0, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0)" class="div-block-2 imagenslider">
-                    <img src="/images/crema_1.png" loading="lazy" sizes="(max-width: 479px) 96vw, (max-width: 767px) 80vw, 40vw" srcset="/images/crema_1-p-500.png 500w, /images/crema_1-p-800.png 800w, /images/crema_1.png 939w" alt="" class="image crema">
-                  </div>
-                  <div style="opacity:1;-webkit-transform:translate3d(0px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(0px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(0px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(0px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0)" class="div-block-2 ladoright textslider">
-                    <h1 class="heading crema">CREMA AUTÉNTICA HECHA EN CENTROAMÉRICA</h1>
-                  </div>
-                </div>
-              </div>
-              <div class="slide w-slide">
-                <div class="distribuidor">
-                  <div style="-webkit-transform:translate3d(0, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(0, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(0, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(0, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0)" class="div-block-2 imagenslider">
-                    <img src="/images/sulaPack.png" loading="lazy" alt="" class="image">
-                  </div>
-                  <div style="opacity:1;-webkit-transform:translate3d(0px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(0px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(0px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(0px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0)" class="div-block-2 ladoright textslider">
-                    <h1 class="heading jugo">FIESTAS DE SABORES Y DELICIOSAS FRUTAS</h1>
-                  </div>
-                </div>
-              </div>
-              <div class="slide w-slide">
-                <div class="distribuidor">
-                  <div style="-webkit-transform:translate3d(0, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(0, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(0, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(0, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0)" class="div-block-2 imagenslider">
-                    <img src="/images/nectar.png" loading="lazy" width="366" sizes="(max-width: 479px) 76vw, (max-width: 767px) 59vw, 32vw" alt="" srcset="/images/nectar-p-500.png 500w, /images/nectar.png 692w" class="image nectar">
-                  </div>
-                  <div style="opacity:1;-webkit-transform:translate3d(0px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-moz-transform:translate3d(0px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);-ms-transform:translate3d(0px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0);transform:translate3d(0px, 0, 0) scale3d(1, 1, 1) rotateX(0) rotateY(0) rotateZ(0) skew(0, 0)" class="div-block-2 ladoright textslider">
-                    <h1 class="heading nectar" style="max-width:100%">TRES SABORES <br> QUE SON UNA DELICIA<br>NATURAL EN TU MESA</h1>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="left-arrow w-slider-arrow-left">
-              <div class="icon-2 w-icon-slider-left"></div>
-            </div>
-            <div class="right-arrow w-slider-arrow-right">
-              <div class="icon w-icon-slider-right"></div>
-            </div>
-            <div color="blue" class="slide-nav w-slider-nav w-slider-nav-invert w-round"></div>
-          </div>
-        </div>
-        <div class="div-block-10">
-          <img src="/images/sfblogo.svg" loading="lazy" alt="">
-        </div>
-      </div>
-    </section>
-
-    <div>
-      <div class="distribuidor dis">
-        <div class="columright">
-          <p class="paragraph black">ÚNETE HOY</p>
-          <h1 class="heading dark sub">Sé un distribuidor</h1>
-          <p class="paragraph black">Únete a nuestra red de distribuidores y lleva auténticos productos hondureños a tu comunidad. Llena el formulario y descubre cómo puedes ser parte de nuestra misión de compartir los sabores de Honduras en Estados Unidos. <strong>¡Impulsa tu negocio con nosotros hoy mismo!</strong></p>
-          <div @click="handleOpen" class="button green w-button">LLENAR FORMULARIO</div>
-        </div>
-        <div class="div-block-2 ladoright dis">
-          <img src="/images/personSula.png" loading="lazy" alt="" class="image-2">
-        </div>
-      </div>
-    </div>
-
-    <section class="productos">
-      <div class="contendorcontent products">
-        <div class="productlist">
-          <div class="itemlistprouduct">
-            <img src="/images/crema.png" loading="lazy" sizes="(max-width: 479px) 40vw, 30vw" srcset="/images/crema-p-500.png 500w, /images/crema-p-800.png 800w, /images/crema.png 869w" alt="">
-          </div>
-          <div class="itemlistprouduct">
-            <img src="/images/jugos.png" loading="lazy" sizes="(max-width: 479px) 40vw, 30vw" srcset="/images/jugos-p-500.png 500w, /images/jugos-p-800.png 800w, /images/jugos.png 869w" alt="">
-          </div>
-          <div class="itemlistprouduct mobile">
-            <img src="/images/milkshake.png" loading="lazy" sizes="(max-width: 479px) 40vw, 30vw" srcset="/images/milkshake-p-500.png 500w, /images/milkshake-p-800.png 800w, /images/milkshake.png 869w" alt="">
-          </div>
-        </div>
-        <a href="https://sazonsula.com/recetas/acompanantes/bruschettas-con-manzana-y-tomates-cherry" target="_blank" class="button green w-button">VER PRODUCTOS</a>
-      </div>
-    </section>
-
-    <section class="recetas">
-      <div id="recetas" class="contendorcontent recetas">
-        <p class="paragraph black">EXPLORA LAS</p>
-        <h1 class="heading dark sub">Recetas con nuestros productos</h1>
-        <div class="div-block-3">
-          <div class="leftreceta">
-            <div class="imagecontainer"></div>
-            <div class="newtext">
-              <h2 class="h2">BROCHETAS CON TOMATES CHERRY Y MOZZARELLA<br></h2>
-              <p class="paragraph black">Dip con Bacon y Jalapeño es una receta muy práctica a la hora de elegir el menú, cuenta con una presentación elegante que se adapta con cualquier otro platillo. Conoce el procedimiento para preparar Dip con Bacon y Jalapeño de la manera más práctica y divertida, utilizando los productos Sula que ya tienes en tu refrigerador, esta receta solo te llevara 40 min en prepararla y tenerla lista para su consumo.</p>
-              <a href="https://sazonsula.com/recetas/acompanantes/bruschettas-con-manzana-y-tomates-cherry" target="_blank" class="button green w-button">VER LA RECETA</a>
-            </div>
-          </div>
-          <div class="rightreceta">
-            <div class="itemnewsright">
-              <div class="imagecontainer rigth _1"></div>
-              <div class="div-block-4">
-                <h2 class="h2"><strong class="bold-text">DIP CON BACON JALAPEÑO</strong></h2>
-                <a href="https://sazonsula.com/recetas/acompanantes/dip-con-bacon-y-jalapeno" target="_blank" class="link-block w-inline-block">
-                  <div class="text-block">VER LA RECETA</div>
-                </a>
-              </div>
-            </div>
-            <div class="itemnewsright">
-              <div class="imagecontainer rigth"></div>
-              <div class="div-block-4">
-                <h2 class="h2"><strong><em class="italic-text">CREMA DE BROCOLI CON QUESO CHEDAR</em></strong></h2>
-                <a href="https://sazonsula.com/recetas/plato-fuerte/sopa-de-brocoli-con-queso-cheddar" target="_blank" class="link-block w-inline-block">
-                  <div class="text-block">VER LA RECETA</div>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="div-block-5">
-          <a href="https://sazonsula.com/" class="button lithtext w-button">VER MÁS RECETAS</a>
-          <img src="/images/SAZON.svg" loading="lazy" alt="" class="image-3">
-        </div>
-      </div>
-    </section>
-
-    <section class="responsabilidad">
-      <div class="contendorcontent flex">
-        <div class="columright">
-          <p class="paragraph">ASPECTO SOCIAL</p>
-          <h1 class="heading sub">RESPONSABILIDAD SOCIAL EMPRESARIAL</h1>
-          <p class="paragraph">Cada vez que compras nuestros productos, estás promoviendo el desarrollo sostenible de más de 2.000 granjas lecheras en Honduras.Nuestra leche proviene exclusivamente de pequeños productores que han crecido con nosotros, que han recibido nuestra asistencia técnica y financiera y que son el primer eslabón de nuestra cadena de valor. Estas granjas producen la mejor leche de Honduras, que se utiliza como ingrediente principal de nuestros productos.</p>
-        </div>
-        <div class="div-block-2 ladoright dis">
-          <img src="/images/picRes.png" loading="lazy" sizes="(max-width: 479px) 90vw, 35vw" srcset="/images/picRes-p-500.png 500w, /images/picRes.png 591w" alt="" class="image-4">
-        </div>
+      <div class="backamarillo">
+        <div class="div-block-3"></div>
       </div>
       <div class="div-block-6">
-        <div class="contendorcontent">
-          <div class="contenedorform">
-            <div>
-              <p class="paragraph">NOS ENCANTARÍA ESTAR EN</p>
-
-
-              <h1 class="heading sub light">CONTACTO CONTIGO</h1>
-              
-            </div>
-            <div class="div-block-7"></div>
-            <div class="div-block-8">
-              <el-input v-model="input" style="width: 240px; height: 40px;" placeholder="Correo electrónico" />
-
-              <a href="#" class="button lithtext form w-button">ENVIAR</a>
-            </div>  
-          </div>
+        <img src="../public/images/participa-1.png" loading="lazy" sizes="(max-width: 479px) 92vw, (max-width: 767px) 55vw, (max-width: 991px) 32vw, 33vw" srcset="../public/images/participa-1-p-500.png 500w, ../public/images/participa-1-p-800.png 800w, ../public/images/participa-1.png 1695w" alt="" class="label2">
+        <img src="../public/images/latasLecheCeteco.png" loading="lazy" sizes="(max-width: 767px) 92vw, (max-width: 991px) 59vw, 61vw" srcset="../public/images/latasLecheCeteco-p-500.png 500w, ../public/images/latasLecheCeteco-p-800.png 800w, ../public/images/latasLecheCeteco-p-1080.png 1080w, ../public/images/latasLecheCeteco.png 1405w" alt="" class="latasceteco">
+      </div>
+      <div class="containernumber">
+        <div class="number">
+          <img src="../public/images/Sin-one.png" loading="lazy" alt="" class="image-7">
+          <div class="text-block">DA CLICK EN "<strong>PARTICIPAR</strong>" Y LLENA EL FORMULARIO CON LA INFORMACIÓN DE TU HIJO/A Y TUYA</div>
+        </div>
+        <div class="number">
+          <img src="../public/images/two.png" loading="lazy" alt="" class="image-7 dos">
+          <div class="text-block">SUBE UNA FOTO DE TU NIÑO POSANDO ORIGINALMENTE.</div>
+        </div>
+        <div class="number">
+          <img src="../public/images/three.png" loading="lazy" alt="" class="image-7 tres">
+          <div class="text-block">ASEGURATE DE RESPONDER LA PREGUNTA: <strong>¿CUÁL ES EL MAYOR SUEÑO DE TU HIJO?</strong></div>
         </div>
       </div>
-    </section>
-
-    <section class="footer">
-      <div class="contendorcontent">
-        <div class="distribuidor dis">
-          <div class="columright footer">
-            <img src="/images/SFBdistribution.png" loading="lazy" sizes="(max-width: 479px) 83vw, (max-width: 767px) 250px, (max-width: 991px) 30vw, 250px" srcset="/images/SFBdistribution-p-500.png 500w, /images/SFBdistribution-p-800.png 800w, /images/SFBdistribution.png 861w" alt="" class="image-5">
-            <div class="div-block-9">
-              <a href="https://m.facebook.com/sulausa" class="w-inline-block">
-                <img src="/images/faceIcon.png" loading="lazy" alt="" class="image-6">
-              </a>
-              <a href="https://www.instagram.com/sula_usa_/" class="w-inline-block">
-                <img src="/images/instaIcon.png" loading="lazy" alt="" class="image-6">
-              </a>
-              <img src="/images/linkicon.png" loading="lazy" alt="" class="image-6">
-            </div>
-          </div>
-          <div class="div-block-2 ladoright dis">
-            <p class="paragraph black">Estamos muy orgullosos de ser una empresa de distribución de alimentos y bebidas dedicada a ofrecer productos de la máxima calidad elaborados por empresas socialmente responsables. Nuestra misión es obtener los mejores alimentos de todo el mundo y llevarlos al mercado estadounidense, garantizando un sabor excepcional y unos estándares sin concesiones.</p>
-          </div>
-        </div>
+      <div class="botoncontainer">
+        <a href="#" @click="handleOpen" class="button w-button">PARTICIPAR</a>
       </div>
-    </section>
-  </div>
+    </div>
+  </body>
 </template>
 
 <script setup>
-import { ElDialog, ElButton, ElMessage } from 'element-plus'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ElMessage } from 'element-plus'
+import { Plus } from '@element-plus/icons-vue'
+import { v4 as uuidv4 } from 'uuid'
 import { useNuxtApp } from '#app'
 
 const { $supabase } = useNuxtApp()
 
 const dialogVisible = ref(false)
-const input = ref('')
 const isMobile = ref(false);
+const fileList = ref([])
+const selectedFile = ref(null)
 
+
+
+
+const form = ref({
+  name: '',
+  email: '',
+  edad: '',
+  ciudad: '',
+  nombre_padres: '',
+  numero_de_identidad: '',
+  telefono: '',
+  tipo_leche: '',
+  pregunta: '',
+  url: ''
+})
+
+const rules = ref({
+  name: [{ required: true, message: 'Por favor ingrese el nombre', trigger: 'blur' }],
+  edad: [{ required: true, message: 'Por favor ingrese la edad', trigger: 'blur' }],
+  ciudad: [{ required: true, message: 'Por favor ingrese la ciudad', trigger: 'blur' }],
+  nombre_padres: [{ required: true, message: 'Por favor ingrese el nombre de los padres', trigger: 'blur' }],
+  numero_de_identidad: [{ required: true, message: 'Por favor ingrese el número de identidad', trigger: 'blur' }],
+  telefono: [{ required: true, message: 'Por favor ingrese el número de celular', trigger: 'blur' }],
+  tipo_leche: [{ required: true, message: 'Por favor ingrese el tipo de leche', trigger: 'blur' }],
+  pregunta: [{ required: true, message: 'Por favor ingrese el mayor sueño', trigger: 'blur' }]
+})
+
+const formRef = ref(null)
 
 const checkScreenWidth = () => {
   const screenWidth = window.innerWidth;
   isMobile.value = screenWidth < 600;
 };
 
-const form = ref({
-  businessName: '',
-  contactName: '',
-  address: '',
-  state: '',
-  phone: '',
-  email: '',
-  products: ''
-})
-
-const rules = {
-  businessName: [
-    { required: true, message: 'Nombre del negocio es obligatorio', trigger: 'blur' }
-  ],
-  contactName: [
-    { required: true, message: 'Nombre del contacto es obligatorio', trigger: 'blur' }
-  ],
-  address: [
-    { required: true, message: 'Dirección es obligatoria', trigger: 'blur' }
-  ],
-  state: [
-    { required: true, message: 'Estado es obligatorio', trigger: 'blur' }
-  ],
-  phone: [
-    { required: true, message: 'Celular es obligatorio', trigger: 'blur' }
-  ],
-  email: [
-    { required: true, message: 'Email es obligatorio', trigger: 'blur' }
-  ],
-  products: [
-    { required: true, message: 'Indicar productos es obligatorio', trigger: 'blur' }
-  ]
-}
-
-const formRef = ref(null)
-
 const handleConfirm = async () => {
   formRef.value.validate(async (valid) => {
     if (valid) {
+      console.log('Validación de formulario exitosa')
+      if (selectedFile.value) {
+        console.log('Archivo seleccionado para subir:', selectedFile.value)
+        const url = await uploadFileToSupabase(selectedFile.value)
+        console.log('URL del archivo subido:', url)
+        form.value.url = url
+      } else {
+        console.log('No hay archivos para subir')
+      }
+
       try {
-        const { error } = await $supabase
-          .from('distribution')
-          .insert([{
-            name: form.value.businessName,
-            contact: form.value.contactName,
-            address: form.value.address,
-            state: form.value.state,
-            phone: form.value.phone,
-            email: form.value.email,
-            product_interest: form.value.products
-          }])
+        console.log('Enviando formulario a la base de datos')
+        const { data, error } = await $supabase
+          .from('ceteco_concurso')
+          .insert([form.value])
 
         if (error) {
           throw error
         }
 
+        console.log('Formulario enviado con éxito:', data)
         ElMessage.success('Formulario enviado con éxito')
         dialogVisible.value = false
         resetForm()
@@ -336,14 +195,18 @@ const handleConfirm = async () => {
 
 const resetForm = () => {
   form.value = {
-    businessName: '',
-    contactName: '',
-    address: '',
-    state: '',
-    phone: '',
+    name: '',
     email: '',
-    products: ''
+    edad: '',
+    ciudad: '',
+    nombre_padres: '',
+    numero_de_identidad: '',
+    telefono: '',
+    tipo_leche: '',
+    pregunta: '',
+    url: ''
   }
+  fileList.value = []
 }
 
 const handleOpen = () => {
@@ -354,40 +217,73 @@ const handleClose = () => {
   dialogVisible.value = false
 }
 
-// Scroll functionality for showing/hiding the menu
-const menu = ref(null)
+const handleExceed = () => {
+  ElMessage.warning('Solo puedes subir una foto')
+}
 
-const handleScroll = () => {
-  if (window.scrollY > 300) {
-    menu.value.classList.add('menu-visible')
-    menu.value.classList.remove('menu-hidden')
-  } else {
-    menu.value.classList.add('menu-hidden')
-    menu.value.classList.remove('menu-visible')
+const handleFileChange = (file, fileList) => {
+  console.log('Archivo añadido:', file)
+  console.log('Lista de archivos actualizada:', fileList)
+  if (fileList.length > 1) {
+    handleRemove(fileList[0], fileList)
   }
+  selectedFile.value = file
+  console.log('selectedFile:', selectedFile.value)
+}
+
+
+const handleRemove = (file, fileList) => {
+  fileList.length = 0 // Vaciar la lista de archivos
+  console.log('Archivo eliminado:', file)
+  console.log('Lista de archivos después de eliminar:', fileList)
 }
 
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
   checkScreenWidth();
   window.addEventListener('resize', checkScreenWidth);
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('scroll', handleScroll)
   window.removeEventListener('resize', checkScreenWidth);
-
 })
+const uploadFileToSupabase = async (file) => {
+  if (!file) {
+    console.log('No hay archivo para subir')
+    return null;
+  }
+
+  const uuid = uuidv4();
+  console.log('Objeto de archivo:', file);
+  console.log('Nombre del archivo:', file.name);
+
+  const fileName = `ceteco/${uuid}-${file.name}`;
+  console.log('Generando nombre de archivo:', fileName)
+  
+  // Usa directamente 'file' en lugar de 'file.raw'
+  const { data, error } = await $supabase.storage
+    .from('storage')
+    .upload(fileName, file);
+
+  if (error) {
+    console.error('Error al subir archivo:', error);
+    return null;
+  }
+
+  const url = `https://wtzcjehvfofuphkmvsru.supabase.co/storage/v1/object/public/storage/${fileName}`
+  console.log('Archivo subido con éxito. URL:', url)
+  return url;
+};
+
 </script>
-
-
-
 
 <style>
 .el-form-item__label {
-  line-height: 20px !important;
   justify-content: flex-start !important;
   font-weight: 300;
+}
+
+label {
+  height: 0px;
 }
 
 .menu-hidden {
@@ -398,10 +294,28 @@ onBeforeUnmount(() => {
   display: flex;
 }
 
-
 .el-form-item {
-  flex-direction:column;
-  }
+  flex-direction: column;
+}
+
+.el-input__wrapper {
+  height: 45px;
+}
+
+.el-upload-list--picture-card .el-upload-list__item {
+  width: 100%!important;
+  height: 550px;
+}
 
 
+.el-upload-list--picture-card {
+--el-upload-picture-card-size: 100%!important;  
+width: 100%;
+}
+
+.el-upload--picture-card{
+  --el-upload-picture-card-size: 100%!important; 
+  width: 100%;
+  height: 200px;
+}
 </style>

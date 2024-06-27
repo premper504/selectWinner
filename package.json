@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-app",
+  "name": "ceteco",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,8 +12,9 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.43.2",
-    "element-plus": "^2.7.3",
+    "element-plus": "^2.7.6",
     "nuxt": "^3.11.2",
+    "uuid": "^10.0.0",
     "vue": "^3.4.27",
     "vue-router": "^4.3.2"
   },
