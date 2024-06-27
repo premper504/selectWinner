@@ -1,6 +1,4 @@
 <template>
-
-
   <body class="body">
     <ElDialog
       v-model="dialogVisible"
@@ -9,9 +7,6 @@
       :style="{ width: isMobile ? '90%' : '50%' }"
     >
       <div>
-
-
-
         <el-form :model="form" :rules="rules" ref="formRef" label-width="250px" style="font-size: 13px; padding-top: 20px">
           <el-form-item label="Nombre de hijo/a" prop="name">
             <el-input v-model="form.name"></el-input>
@@ -64,7 +59,7 @@
       <template #footer>
         <span class="dialog-footer">
           <ElButton @click="handleClose">Cancelar</ElButton>
-          <ElButton type="primary" @click="handleConfirm()">Continuar</ElButton>
+          <ElButton type="primary" @click="handleConfirm">Continuar</ElButton>
         </span>
       </template>
     </ElDialog>
@@ -99,7 +94,7 @@
         </div>
       </div>
       <div class="botoncontainer">
-        <a href="#" @click="handleOpen" class="button w-button" style="height:55px; background-color: yellow; color: red; font-weight: 900; width: 300px;">PARTICIPAR</a>
+        <a href="#" @click="handleOpen" class="button w-button" style="height:55px; background-color: yellow; color: red; font-weight: 900; width: 200px;">PARTICIPAR</a>
       </div>
     </div>
   </body>
@@ -115,12 +110,9 @@ import { useNuxtApp } from '#app'
 const { $supabase } = useNuxtApp()
 
 const dialogVisible = ref(false)
-const isMobile = ref(false);
+const isMobile = ref(false)
 const fileList = ref([])
 const selectedFile = ref(null)
-
-
-
 
 const form = ref({
   name: '',
@@ -150,17 +142,17 @@ const rules = ref({
 const formRef = ref(null)
 
 const checkScreenWidth = () => {
-  const screenWidth = window.innerWidth;
-  isMobile.value = screenWidth < 600;
-};
+  const screenWidth = window.innerWidth
+  isMobile.value = screenWidth < 600
+}
 
 const handleConfirm = async () => {
   formRef.value.validate(async (valid) => {
     if (valid) {
       console.log('Validación de formulario exitosa')
       if (selectedFile.value) {
-        console.log('Archivo seleccionado para subir:', selectedFile.value)
-        const url = await uploadFileToSupabase(selectedFile.value)
+        console.log('Archivo seleccionado para subir:', selectedFile.value.raw)
+        const url = await uploadFileToSupabase(selectedFile.value.raw)
         console.log('URL del archivo subido:', url)
         form.value.url = url
       } else {
@@ -205,6 +197,7 @@ const resetForm = () => {
     url: ''
   }
   fileList.value = []
+  selectedFile.value = null // Asegurarse de reiniciar el archivo seleccionado
 }
 
 const handleOpen = () => {
@@ -229,49 +222,44 @@ const handleFileChange = (file, fileList) => {
   console.log('selectedFile:', selectedFile.value)
 }
 
-
 const handleRemove = (file, fileList) => {
   fileList.length = 0 // Vaciar la lista de archivos
+  selectedFile.value = null // Reiniciar el archivo seleccionado
   console.log('Archivo eliminado:', file)
   console.log('Lista de archivos después de eliminar:', fileList)
 }
 
 onMounted(() => {
-  checkScreenWidth();
-  window.addEventListener('resize', checkScreenWidth);
+  checkScreenWidth()
+  window.addEventListener('resize', checkScreenWidth)
 })
 
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', checkScreenWidth);
+  window.removeEventListener('resize', checkScreenWidth)
 })
+
 const uploadFileToSupabase = async (file) => {
   if (!file) {
     console.log('No hay archivo para subir')
-    return null;
+    return null
   }
 
-  const uuid = uuidv4();
-  console.log('Objeto de archivo:', file);
-  console.log('Nombre del archivo:', file.name);
+  const uuid = uuidv4()
+  const fileName = `ceteco/${uuid}-${file.name}`
 
-  const fileName = `ceteco/${uuid}-${file.name}`;
-  console.log('Generando nombre de archivo:', fileName)
-  
-  // Usa directamente 'file' en lugar de 'file.raw'
   const { data, error } = await $supabase.storage
     .from('storage')
-    .upload(fileName, file);
+    .upload(fileName, file)
 
   if (error) {
-    console.error('Error al subir archivo:', error);
-    return null;
+    console.error('Error al subir archivo:', error)
+    return null
   }
 
   const url = `https://wtzcjehvfofuphkmvsru.supabase.co/storage/v1/object/public/storage/${fileName}`
   console.log('Archivo subido con éxito. URL:', url)
-  return url;
-};
-
+  return url
+}
 </script>
 
 <style>
@@ -305,14 +293,13 @@ label {
   height: 550px;
 }
 
-
 .el-upload-list--picture-card {
---el-upload-picture-card-size: 100%!important;  
-width: 100%;
+  --el-upload-picture-card-size: 100%!important;
+  width: 100%;
 }
 
-.el-upload--picture-card{
-  --el-upload-picture-card-size: 100%!important; 
+.el-upload--picture-card {
+  --el-upload-picture-card-size: 100%!important;
   width: 100%;
   height: 200px;
 }
