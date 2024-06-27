@@ -7,8 +7,6 @@ export default defineNuxtPlugin((nuxtApp) => {
   const supabaseUrl = config.public.SUPABASE_URL
   const supabaseKey = config.public.SUPABASE_KEY
 
-  console.log('Supabase URL:', supabaseUrl)
-  console.log('Supabase Key:', supabaseKey)
 
   if (!supabaseUrl || !supabaseKey) {
     console.error('No se pudo acceder alas variables de entorno!')
