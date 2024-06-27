@@ -11,7 +11,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.43.2",
+    "@supabase/supabase-js": "^2.44.1",
     "element-plus": "^2.7.6",
     "nuxt": "^3.11.2",
     "uuid": "^10.0.0",
