@@ -146,7 +146,8 @@ const rules = ref({
   numero_de_identidad: [{ required: true, message: 'Por favor ingrese el número de identidad', trigger: 'blur' }],
   telefono: [{ required: true, message: 'Por favor ingrese el número de celular', trigger: 'blur' }],
   tipo_leche: [{ required: true, message: 'Por favor ingrese el tipo de leche', trigger: 'blur' }],
-  pregunta: [{ required: true, message: 'Por favor ingrese el mayor sueño', trigger: 'blur' }]
+  pregunta: [{ required: true, message: 'Por favor ingrese el mayor sueño', trigger: 'blur' }],
+  email: [{ required: true, message: 'Por favor ingrese correo electrónico', trigger: 'blur' }]
 })
 
 const formRef = ref(null)
