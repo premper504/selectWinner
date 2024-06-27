@@ -90,19 +90,16 @@
       <div class="containernumber">
         <div class="number">
           <img src="../public/images/Sin-one.png" loading="lazy" alt="" class="image-7">
-          <div class="text-block">DA CLICK EN "<strong>PARTICIPAR</strong>" Y LLENA EL FORMULARIO CON LA INFORMACIÓN DE TU HIJO/A Y TUYA</div>
         </div>
         <div class="number">
           <img src="../public/images/two.png" loading="lazy" alt="" class="image-7 dos">
-          <div class="text-block">SUBE UNA FOTO DE TU NIÑO POSANDO ORIGINALMENTE.</div>
         </div>
         <div class="number">
           <img src="../public/images/three.png" loading="lazy" alt="" class="image-7 tres">
-          <div class="text-block">ASEGURATE DE RESPONDER LA PREGUNTA: <strong>¿CUÁL ES EL MAYOR SUEÑO DE TU HIJO?</strong></div>
         </div>
       </div>
       <div class="botoncontainer">
-        <a href="#" @click="handleOpen" class="button w-button">PARTICIPAR</a>
+        <a href="#" @click="handleOpen" class="button w-button" style="height:55px; background-color: yellow; color: red; font-weight: 900; width: 300px;">PARTICIPAR</a>
       </div>
     </div>
   </body>

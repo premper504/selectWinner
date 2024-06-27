@@ -56,7 +56,7 @@
   width: 400px;
   margin-top: -20px;
   margin-bottom: 176px;
-  margin-left: 114px;
+  margin-left: 85px;
 }
 
 .div-block-3 {
@@ -87,7 +87,7 @@
   width: 370px;
   height: 500px;
   margin-top: -191px;
-  margin-left: 33px;
+  margin-left: 61px;
 }
 
 .containerkids {
@@ -121,12 +121,14 @@
 
 .containernumber {
   flex-flow: row;
+  background-image: url('../images/backpasos.png');
   justify-content: center;
+  background-repeat: no-repeat;
   align-items: center;
   width: 100%;
-  margin-top: 8px;
+  margin-top: -50px;
   margin-bottom: 49px;
-  padding: 0 19px 19px;
+  padding: 60px 20px 50px 60px;
   display: flex;
 }
 
@@ -221,6 +223,7 @@
 
   .containernumber {
     padding-right: 0;
+    padding-left: 30px;
   }
 
   .number {
@@ -285,6 +288,7 @@
   .containernumber {
     flex-flow: column;
     margin-bottom: 21px;
+    padding-left: 30px;
   }
 
   .number {
@@ -388,7 +392,8 @@
   .containernumber {
     justify-content: center;
     align-items: flex-start;
-    padding-left: 24px;
+    padding-left: 50px!important;
+    margin-bottom: 0px;
   }
 
   .number {
