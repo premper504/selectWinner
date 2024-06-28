@@ -11,10 +11,8 @@
           <el-form-item label="Nombre de hijo/a" prop="name">
             <el-input v-model="form.name"></el-input>
           </el-form-item>
-          <el-form-item label="Correo electrónico" prop="email">
-            <el-input v-model="form.email"></el-input>
-          </el-form-item>
-          <el-form-item label="Edad" prop="edad">
+      
+          <el-form-item label="Edad del niño" prop="edad">
             <el-input v-model="form.edad"></el-input>
           </el-form-item>
           <el-form-item label="Ciudad" prop="ciudad">
@@ -29,17 +27,20 @@
           <el-form-item label="Celular" prop="telefono">
             <el-input v-model="form.telefono"></el-input>
           </el-form-item>
+          <el-form-item label="Correo electrónico" prop="email">
+            <el-input v-model="form.email"></el-input>
+          </el-form-item>
           <el-form-item style="line-height: 10px;" label="¿Qué tipo de leche Ceteco consume su hijo?" prop="tipo_leche">
             <el-input v-model="form.tipo_leche"></el-input>
           </el-form-item>
-        
         </el-form>
       </div>
 
       <div>
         <p>Agregar fotografía de tu niño posando originalmente</p>
         <el-upload
-          action="#"
+        v-if="!selectedFile"
+        action="#"
           list-type="picture-card"
           :auto-upload="false"
           :limit="1"
@@ -49,9 +50,20 @@
           :on-exceed="handleExceed"
         >
           <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center;">
-            <el-icon><Plus /></el-icon>
+            Toma o selecciona una imagen   
+            <el-icon style="margin-left: 10px;"><Plus /> </el-icon>
           </div>
         </el-upload>
+
+
+        <div v-else style="display: flex; flex-direction: column; align-items: center;">
+  <img :src="imageUrl" alt="Fotografía " style="max-width: 100%; height: auto;">
+             
+
+  <el-button @click="handleRemove(selectedFile, fileList)" type="danger" icon="el-icon-delete" circle>  <el-icon style="margin-left: -5px;"><Plus /> </el-icon> </el-button>
+</div>
+
+
       </div>
 
       <template #footer>
@@ -91,35 +103,35 @@
           <img src="../public/images/three.png" loading="lazy" alt="" class="image-7 tres">
         </div>
       </div>
-      <div class="botoncontainer">
-        <a href="#" @click="handleOpen" class="button w-button" style="height:55px; background-color: yellow; color: red; font-weight: 900; width: 200px;">PARTICIPAR</a>
-      </div>
 
       <div style="padding:20px; margin-top:50px; color: white; display:flex; justify-content: center; "> 
-    <a  style=" color:white" href="https://wtzcjehvfofuphkmvsru.supabase.co/storage/v1/object/public/storage/terminosycondicionespromoceteco.pdf" target="_blank">Términos y Condiciones</a>
-  </div> 
+        <input style="margin-right: 10px; width: 20px;" type="checkbox" id="terms" v-model="acceptedTerms">
+        <span style="font-weight: 900; margin-right: 6px"> Acepto </span>
+        <a style="color:white" href="https://wtzcjehvfofuphkmvsru.supabase.co/storage/v1/object/public/storage/terminosycondicionespromoceteco.pdf" target="_blank"> Términos y Condiciones</a>
+      </div> 
 
-
+      <div class="botoncontainer">
+        <button @click="handleOpen" :class="{ 'disabled': !acceptedTerms }" class="button w-button" :style="buttonStyle" :disabled="!acceptedTerms">PARTICIPAR</button>
+      </div>
     </div>
-
-  
- 
- </body>
+  </body>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { v4 as uuidv4 } from 'uuid'
 import { useNuxtApp } from '#app'
 
 const { $supabase } = useNuxtApp()
+const imageUrl = ref(null)
 
 const dialogVisible = ref(false)
 const isMobile = ref(false)
 const fileList = ref([])
 const selectedFile = ref(null)
+const acceptedTerms = ref(true); 
 
 const form = ref({
   name: '',
@@ -225,11 +237,13 @@ const handleFileChange = (file, fileList) => {
     handleRemove(fileList[0], fileList)
   }
   selectedFile.value = file
+  imageUrl.value = URL.createObjectURL(file.raw)
   console.log('selectedFile:', selectedFile.value)
 }
 
 const handleRemove = (file, fileList) => {
   fileList.length = 0 // Vaciar la lista de archivos
+  imageUrl.value = null 
   selectedFile.value = null // Reiniciar el archivo seleccionado
   console.log('Archivo eliminado:', file)
   console.log('Lista de archivos después de eliminar:', fileList)
@@ -266,6 +280,15 @@ const uploadFileToSupabase = async (file) => {
   console.log('Archivo subido con éxito. URL:', url)
   return url
 }
+
+const buttonStyle = computed(() => ({
+  height: '55px',
+  backgroundColor: acceptedTerms.value ? 'yellow' : 'gray',
+  color: acceptedTerms.value ? 'red' : 'white',
+  fontWeight: '900',
+  width: '200px',
+  cursor: acceptedTerms.value ? 'pointer' : 'not-allowed'
+}));
 </script>
 
 <style>
@@ -309,5 +332,10 @@ label {
   --el-upload-picture-card-size: 100%!important;
   width: 100%;
   height: 200px;
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.5;
 }
 </style>
