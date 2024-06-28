@@ -29,12 +29,10 @@
           <el-form-item label="Celular" prop="telefono">
             <el-input v-model="form.telefono"></el-input>
           </el-form-item>
-          <el-form-item style="line-height: 10px;" label="Tipo de leche" prop="tipo_leche">
+          <el-form-item style="line-height: 10px;" label="¿Qué tipo de leche Ceteco consume su hijo?" prop="tipo_leche">
             <el-input v-model="form.tipo_leche"></el-input>
           </el-form-item>
-          <el-form-item style="line-height: 10px;" label="Cuál es el mayor sueño de tu hijo/a" prop="pregunta">
-            <el-input v-model="form.pregunta"></el-input>
-          </el-form-item>
+        
         </el-form>
       </div>
 
@@ -96,8 +94,17 @@
       <div class="botoncontainer">
         <a href="#" @click="handleOpen" class="button w-button" style="height:55px; background-color: yellow; color: red; font-weight: 900; width: 200px;">PARTICIPAR</a>
       </div>
+
+      <div style="padding:20px; margin-top:50px; color: white; display:flex; justify-content: center; "> 
+    <a  style=" color:white" href="https://wtzcjehvfofuphkmvsru.supabase.co/storage/v1/object/public/storage/terminosycondicionespromoceteco.pdf" target="_blank">Términos y Condiciones</a>
+  </div> 
+
+
     </div>
-  </body>
+
+  
+ 
+ </body>
 </template>
 
 <script setup>
@@ -135,7 +142,6 @@ const rules = ref({
   numero_de_identidad: [{ required: true, message: 'Por favor ingrese el número de identidad', trigger: 'blur' }],
   telefono: [{ required: true, message: 'Por favor ingrese el número de celular', trigger: 'blur' }],
   tipo_leche: [{ required: true, message: 'Por favor ingrese el tipo de leche', trigger: 'blur' }],
-  pregunta: [{ required: true, message: 'Por favor ingrese el mayor sueño', trigger: 'blur' }],
   email: [{ required: true, message: 'Por favor ingrese correo electrónico', trigger: 'blur' }]
 })
 
@@ -266,6 +272,7 @@ const uploadFileToSupabase = async (file) => {
 .el-form-item__label {
   justify-content: flex-start !important;
   font-weight: 300;
+  width: 100%!important;
 }
 
 label {
