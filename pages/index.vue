@@ -18,10 +18,10 @@
           <el-form-item label="Ciudad" prop="ciudad">
             <el-input v-model="form.ciudad"></el-input>
           </el-form-item>
-          <el-form-item label="Nombre de los padres" prop="parents">
+          <el-form-item label="Nombre de los padres" prop="nombre_padres">
             <el-input v-model="form.nombre_padres"></el-input>
           </el-form-item>
-          <el-form-item label="Número de identidad" prop="numero_de_identidad">
+          <el-form-item label="Número de identidad (sin guiones)" prop="numero_de_identidad">
             <el-input v-model="form.numero_de_identidad"></el-input>
           </el-form-item>
           <el-form-item label="Celular" prop="telefono">
@@ -39,8 +39,8 @@
       <div>
         <p>Agregar fotografía de tu niño posando originalmente</p>
         <el-upload
-        v-if="!selectedFile"
-        action="#"
+          v-if="!selectedFile"
+          action="#"
           list-type="picture-card"
           :auto-upload="false"
           :limit="1"
@@ -55,15 +55,12 @@
           </div>
         </el-upload>
 
-
         <div v-else style="display: flex; flex-direction: column; align-items: center;">
-  <img :src="imageUrl" alt="Fotografía " style="max-width: 100%; height: auto;">
-             
-
-  <el-button @click="handleRemove(selectedFile, fileList)" type="danger" icon="el-icon-delete" circle>  <el-icon style="margin-left: -5px;"><Plus /> </el-icon> </el-button>
-</div>
-
-
+          <img :src="imageUrl" alt="Fotografía " style="max-width: 100%; height: auto;">
+          <el-button @click="handleRemove(selectedFile, fileList)" type="danger" icon="el-icon-delete" circle>
+            <el-icon style="margin-left: -5px;"><Plus /> </el-icon>
+          </el-button>
+        </div>
       </div>
 
       <template #footer>
@@ -104,7 +101,7 @@
         </div>
       </div>
 
-      <div style="padding:20px; margin-top:50px; color: white; display:flex; justify-content: center; "> 
+      <div style="padding:20px; margin-top:50px; color: white; display:flex; justify-content: center;"> 
         <input style="margin-right: 10px; width: 20px;" type="checkbox" id="terms" v-model="acceptedTerms">
         <span style="font-weight: 900; margin-right: 6px"> Acepto </span>
         <a style="color:white" href="https://wtzcjehvfofuphkmvsru.supabase.co/storage/v1/object/public/storage/terminosycondicionespromoceteco.pdf" target="_blank"> Términos y Condiciones</a>
@@ -131,7 +128,7 @@ const dialogVisible = ref(false)
 const isMobile = ref(false)
 const fileList = ref([])
 const selectedFile = ref(null)
-const acceptedTerms = ref(true); 
+const acceptedTerms = ref(true)
 
 const form = ref({
   name: '',
@@ -147,14 +144,55 @@ const form = ref({
 })
 
 const rules = ref({
-  name: [{ required: true, message: 'Por favor ingrese el nombre', trigger: 'blur' }],
-  edad: [{ required: true, message: 'Por favor ingrese la edad', trigger: 'blur' }],
-  ciudad: [{ required: true, message: 'Por favor ingrese la ciudad', trigger: 'blur' }],
-  nombre_padres: [{ required: true, message: 'Por favor ingrese el nombre de los padres', trigger: 'blur' }],
-  numero_de_identidad: [{ required: true, message: 'Por favor ingrese el número de identidad', trigger: 'blur' }],
-  telefono: [{ required: true, message: 'Por favor ingrese el número de celular', trigger: 'blur' }],
-  tipo_leche: [{ required: true, message: 'Por favor ingrese el tipo de leche', trigger: 'blur' }],
-  email: [{ required: true, message: 'Por favor ingrese correo electrónico', trigger: 'blur' }]
+  name: [
+    { required: true, message: 'Por favor ingrese el nombre', trigger: 'blur' },
+    { type: 'string', min: 5, message: 'El nombre debe tener al menos 5 caracteres', trigger: 'blur' },
+    { pattern: /^[a-zA-Z\s]*$/, message: 'Por favor ingrese un nombre válido', trigger: 'blur' }
+  ],
+  edad: [{ required: true, message: 'Por favor ingrese la edad', trigger: 'blur' },
+    
+  ],
+  ciudad: [{ required: true, message: 'Por favor ingrese la ciudad', trigger: 'blur' },
+  { type: 'string', min: 4, message: 'La Ciudad debe tener al menos 4 caracteres', trigger: 'blur' },
+  { pattern: /^[a-zA-Z\s]*$/, message: 'Por favor ingrese un nombre válido', trigger: 'blur' }
+  ],
+  nombre_padres: [{ required: true, message: 'Por favor ingrese el nombre de los padres', trigger: 'blur' },
+  { type: 'string', min: 5, message: 'El nombre de los padres debe tener al menos 5 caracteres', trigger: 'blur' },
+  { pattern: /^[a-zA-Z\s]*$/, message: 'Por favor ingrese un nombre válido', trigger: 'blur' }
+  ],
+  numero_de_identidad: [
+    { required: true, message: 'Por favor ingrese el número de identidad', trigger: 'blur' },
+    { validator: (rule, value, callback) => {
+        if (!value) {
+          callback(new Error('Por favor ingrese el número de identidad'));
+        } else if (!/^\d{10,}$/.test(value)) {
+          callback(new Error('El número de identidad no parece ser válido'));
+        } else {
+          callback();
+        }
+      }, trigger: 'blur'
+    }
+  ],
+  telefono: [
+    { required: true, message: 'Por favor ingrese el número de celular', trigger: 'blur' },
+    { validator: (rule, value, callback) => {
+        if (!value) {
+          callback(new Error('Por favor ingrese el número de celular'));
+        } else if (!/^\d{8}$/.test(value)) {
+          callback(new Error('Este no parece ser un número de teléfono válido'));
+        } else {
+          callback();
+        }
+      }, trigger: 'blur'
+    }
+  ],
+  tipo_leche: [{ required: true, message: 'Por favor ingrese el tipo de leche', trigger: 'blur' },
+  { pattern: /^[a-zA-Z\s]*$/, message: 'Por favor ingrese un tipo de leche válido', trigger: 'blur' }
+  ],
+  email: [
+    { required: true, message: 'Por favor ingrese correo electrónico', trigger: 'blur' },
+    { type: 'email', message: 'Por favor ingrese un correo electrónico válido', trigger: 'blur' }
+  ]
 })
 
 const formRef = ref(null)
@@ -171,10 +209,15 @@ const handleConfirm = async () => {
       if (selectedFile.value) {
         console.log('Archivo seleccionado para subir:', selectedFile.value.raw)
         const url = await uploadFileToSupabase(selectedFile.value.raw)
+        if (!url) {
+          ElMessage.error('Error al subir la foto. Por favor, inténtalo de nuevo.')
+          return
+        }
         console.log('URL del archivo subido:', url)
         form.value.url = url
       } else {
-        console.log('No hay archivos para subir')
+        ElMessage.error('Por favor, sube una foto de tu niño/a.')
+        return
       }
 
       try {
@@ -215,7 +258,7 @@ const resetForm = () => {
     url: ''
   }
   fileList.value = []
-  selectedFile.value = null // Asegurarse de reiniciar el archivo seleccionado
+  selectedFile.value = null
 }
 
 const handleOpen = () => {
@@ -242,9 +285,9 @@ const handleFileChange = (file, fileList) => {
 }
 
 const handleRemove = (file, fileList) => {
-  fileList.length = 0 // Vaciar la lista de archivos
+  fileList.length = 0
   imageUrl.value = null 
-  selectedFile.value = null // Reiniciar el archivo seleccionado
+  selectedFile.value = null
   console.log('Archivo eliminado:', file)
   console.log('Lista de archivos después de eliminar:', fileList)
 }
@@ -288,7 +331,7 @@ const buttonStyle = computed(() => ({
   fontWeight: '900',
   width: '200px',
   cursor: acceptedTerms.value ? 'pointer' : 'not-allowed'
-}));
+}))
 </script>
 
 <style>
