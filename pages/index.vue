@@ -187,7 +187,7 @@ const rules = ref({
     }
   ],
   tipo_leche: [{ required: true, message: 'Por favor ingrese el tipo de leche', trigger: 'blur' },
-  { pattern: /^[a-zA-Z\s]*$/, message: 'Por favor ingrese un tipo de leche válido', trigger: 'blur' }
+  { type: 'string', min: 5, message: 'El nombre debe tener al menos 5 caracteres', trigger: 'blur' },
   ],
   email: [
     { required: true, message: 'Por favor ingrese correo electrónico', trigger: 'blur' },
