@@ -139,7 +139,6 @@ const form = ref({
   numero_de_identidad: '',
   telefono: '',
   tipo_leche: '',
-  pregunta: '',
   url: ''
 })
 
@@ -254,7 +253,6 @@ const resetForm = () => {
     numero_de_identidad: '',
     telefono: '',
     tipo_leche: '',
-    pregunta: '',
     url: ''
   }
   fileList.value = []
@@ -281,15 +279,12 @@ const handleFileChange = (file, fileList) => {
   }
   selectedFile.value = file
   imageUrl.value = URL.createObjectURL(file.raw)
-  console.log('selectedFile:', selectedFile.value)
 }
 
 const handleRemove = (file, fileList) => {
   fileList.length = 0
   imageUrl.value = null 
   selectedFile.value = null
-  console.log('Archivo eliminado:', file)
-  console.log('Lista de archivos después de eliminar:', fileList)
 }
 
 onMounted(() => {
