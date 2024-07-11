@@ -110,9 +110,31 @@
       <div class="botoncontainer">
         <button @click="handleOpen" :class="{ 'disabled': !acceptedTerms }" class="button w-button" :style="buttonStyle" :disabled="!acceptedTerms">PARTICIPAR</button>
       </div>
+
+      <div style="margin-top: 70px; margin-left: 20px;">
+        <img src="../public/images/participantes.svg" loading="lazy" alt="" class="imageParticipantes">
+      </div>
+
+      <div class="containerParticipantes" style="margin-top: -30px;">
+        <div v-for="participante in participantes" :key="participante.id" class="card">
+          <img :src="participante.url" alt="" class="participante-img" />
+          <div class="participante-name">{{ participante.name }}</div>
+        </div>
+      </div>
+
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        :total="totalParticipants"
+        :page-size="pageSize"
+        @current-change="handlePageChange"
+        style="text-align: center; margin-top: 20px; display: flex;
+    justify-content: center;"
+      />
     </div>
   </body>
 </template>
+
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
@@ -123,12 +145,13 @@ import { useNuxtApp } from '#app'
 
 const { $supabase } = useNuxtApp()
 const imageUrl = ref(null)
-
 const dialogVisible = ref(false)
 const isMobile = ref(false)
 const fileList = ref([])
 const selectedFile = ref(null)
 const acceptedTerms = ref(true)
+const loading = ref(false) // Define loading state
+const participantes = ref([]) // Define the participantes ref
 
 const form = ref({
   name: '',
@@ -148,45 +171,50 @@ const rules = ref({
     { type: 'string', min: 5, message: 'El nombre debe tener al menos 5 caracteres', trigger: 'blur' },
     { pattern: /^[a-zA-Z\s]*$/, message: 'Por favor ingrese un nombre válido', trigger: 'blur' }
   ],
-  edad: [{ required: true, message: 'Por favor ingrese la edad', trigger: 'blur' },
-    
+  edad: [{ required: true, message: 'Por favor ingrese la edad', trigger: 'blur' }],
+  ciudad: [
+    { required: true, message: 'Por favor ingrese la ciudad', trigger: 'blur' },
+    { type: 'string', min: 4, message: 'La Ciudad debe tener al menos 4 caracteres', trigger: 'blur' },
+    { pattern: /^[a-zA-Z\s]*$/, message: 'Por favor ingrese un nombre válido', trigger: 'blur' }
   ],
-  ciudad: [{ required: true, message: 'Por favor ingrese la ciudad', trigger: 'blur' },
-  { type: 'string', min: 4, message: 'La Ciudad debe tener al menos 4 caracteres', trigger: 'blur' },
-  { pattern: /^[a-zA-Z\s]*$/, message: 'Por favor ingrese un nombre válido', trigger: 'blur' }
-  ],
-  nombre_padres: [{ required: true, message: 'Por favor ingrese el nombre de los padres', trigger: 'blur' },
-  { type: 'string', min: 5, message: 'El nombre de los padres debe tener al menos 5 caracteres', trigger: 'blur' },
-  { pattern: /^[a-zA-Z\s]*$/, message: 'Por favor ingrese un nombre válido', trigger: 'blur' }
+  nombre_padres: [
+    { required: true, message: 'Por favor ingrese el nombre de los padres', trigger: 'blur' },
+    { type: 'string', min: 5, message: 'El nombre de los padres debe tener al menos 5 caracteres', trigger: 'blur' },
+    { pattern: /^[a-zA-Z\s]*$/, message: 'Por favor ingrese un nombre válido', trigger: 'blur' }
   ],
   numero_de_identidad: [
     { required: true, message: 'Por favor ingrese el número de identidad', trigger: 'blur' },
-    { validator: (rule, value, callback) => {
+    {
+      validator: (rule, value, callback) => {
         if (!value) {
-          callback(new Error('Por favor ingrese el número de identidad'));
+          callback(new Error('Por favor ingrese el número de identidad'))
         } else if (!/^\d{10,}$/.test(value)) {
-          callback(new Error('El número de identidad no parece ser válido'));
+          callback(new Error('El número de identidad no parece ser válido'))
         } else {
-          callback();
+          callback()
         }
-      }, trigger: 'blur'
+      },
+      trigger: 'blur'
     }
   ],
   telefono: [
     { required: true, message: 'Por favor ingrese el número de celular', trigger: 'blur' },
-    { validator: (rule, value, callback) => {
+    {
+      validator: (rule, value, callback) => {
         if (!value) {
-          callback(new Error('Por favor ingrese el número de celular'));
+          callback(new Error('Por favor ingrese el número de celular'))
         } else if (!/^\d{8}$/.test(value)) {
-          callback(new Error('Este no parece ser un número de teléfono válido'));
+          callback(new Error('Este no parece ser un número de teléfono válido'))
         } else {
-          callback();
+          callback()
         }
-      }, trigger: 'blur'
+      },
+      trigger: 'blur'
     }
   ],
-  tipo_leche: [{ required: true, message: 'Por favor ingrese el tipo de leche', trigger: 'blur' },
-  { type: 'string', min: 5, message: 'El nombre debe tener al menos 5 caracteres', trigger: 'blur' },
+  tipo_leche: [
+    { required: true, message: 'Por favor ingrese el tipo de leche', trigger: 'blur' },
+    { type: 'string', min: 5, message: 'El nombre debe tener al menos 5 caracteres', trigger: 'blur' }
   ],
   email: [
     { required: true, message: 'Por favor ingrese correo electrónico', trigger: 'blur' },
@@ -202,6 +230,7 @@ const checkScreenWidth = () => {
 }
 
 const handleConfirm = async () => {
+  loading.value = true // Start loading
   formRef.value.validate(async (valid) => {
     if (valid) {
       console.log('Validación de formulario exitosa')
@@ -210,12 +239,14 @@ const handleConfirm = async () => {
         const url = await uploadFileToSupabase(selectedFile.value.raw)
         if (!url) {
           ElMessage.error('Error al subir la foto. Por favor, inténtalo de nuevo.')
+          loading.value = false // Stop loading
           return
         }
         console.log('URL del archivo subido:', url)
         form.value.url = url
       } else {
         ElMessage.error('Por favor, sube una foto de tu niño/a.')
+        loading.value = false // Stop loading
         return
       }
 
@@ -233,6 +264,7 @@ const handleConfirm = async () => {
         ElMessage.success('Formulario enviado con éxito')
         dialogVisible.value = false
         resetForm()
+        await fetchParticipantes() // Fetch participants after successful form submission
       } catch (error) {
         ElMessage.error('Error al enviar el formulario')
         console.error('Error al enviar el formulario:', error)
@@ -240,6 +272,7 @@ const handleConfirm = async () => {
     } else {
       ElMessage.error('Por favor completa todos los campos obligatorios')
     }
+    loading.value = false // Stop loading
   })
 }
 
@@ -283,13 +316,45 @@ const handleFileChange = (file, fileList) => {
 
 const handleRemove = (file, fileList) => {
   fileList.length = 0
-  imageUrl.value = null 
+  imageUrl.value = null
   selectedFile.value = null
+}
+
+const currentPage = ref(1)
+const pageSize = ref(16)
+const totalParticipants = ref(0)
+
+const fetchParticipantes = async () => {
+  try {
+    const from = (currentPage.value - 1) * pageSize.value
+    const to = currentPage.value * pageSize.value - 1
+
+    const { data, error, count } = await $supabase
+      .from('ceteco_concurso')
+      .select('*', { count: 'exact' })
+      .order('id', { ascending: false })
+      .range(from, to)
+      .eq('aprobado', true) 
+    if (error) {
+      throw error
+    }
+
+    participantes.value = data
+    totalParticipants.value = count
+  } catch (error) {
+    console.error('Error al obtener participantes:', error)
+  }
+}
+
+const handlePageChange = (page) => {
+  currentPage.value = page
+  fetchParticipantes()
 }
 
 onMounted(() => {
   checkScreenWidth()
   window.addEventListener('resize', checkScreenWidth)
+  fetchParticipantes() // Fetch participants on component mount
 })
 
 onBeforeUnmount(() => {
@@ -329,11 +394,58 @@ const buttonStyle = computed(() => ({
 }))
 </script>
 
+
+
+
 <style>
 .el-form-item__label {
   justify-content: flex-start !important;
-  font-weight: 300;
+  font-weight: 350;
   width: 100%!important;
+}\]
+
+.imageParticipantes {
+  height: 40px;
+  margin-top: 50px;
+  margin-left: 50px;
+}
+
+.containerParticipantes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  background-image: url('../images/white.svg');
+  justify-content: center;
+  background-size: cover;
+  align-items: center;
+  width: 100%;
+  margin-top: -50px;
+  margin-bottom: 49px;
+  padding: 60px 20px 50px 60px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width:100%
+}
+
+.participante-img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  object-position: top;
+}
+
+.participante-name {
+  padding: 10px;
+  text-align: center;
+  font-weight: 500;
 }
 
 label {
