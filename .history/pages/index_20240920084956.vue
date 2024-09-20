@@ -44,15 +44,15 @@
               </el-form-item>
 
               <el-form-item label="Departamento" prop="state">
-                  <el-select v-model="form.state" placeholder="Selecciona un departamento">
-                    <el-option
-                      v-for="department in departments"
-                      :key="department"
-                      :label="department"
-                      :value="department"
-                    ></el-option>
-                  </el-select>
-                </el-form-item>
+  <el-select v-model="form.state" placeholder="Selecciona un departamento">
+    <el-option
+      v-for="department in departments"
+      :key="department"
+      :label="department"
+      :value="department"
+    ></el-option>
+  </el-select>
+</el-form-item>
 
               <el-form-item label="Lugar donde se realizó la compra" prop="place">
                 <el-input v-model="form.place"></el-input>
