@@ -1,0 +1,444 @@
+<template>
+  <div>
+    <section class="section">
+      <div class="container">
+        <img src="~/assets/images/ceteco___cumpledeseo.png" class="imageHeader" alt="Cumple deseo" />
+        <img src="~/assets/images/ceteco___premios.png" class="ImgagePremios" alt="Premios" />
+        <div>Participa en los sorteos quincenales</div>
+      </div>
+    </section>
+    <img src="~/assets/images/bar_roja.png" alt="Barra roja" />
+    <section class="gjs-section">
+      <div class="gjs-container">
+        <img src="~/assets/images/items.png" alt="Items" />
+        <img src="~/assets/images/latas.png" class="latas" alt="Latas" />
+      </div>
+    </section>
+  </div>
+</template>
+
+<style lang="scss" scoped>
+
+:root {
+  --white: white;
+  --black: black;
+}
+
+.body {
+  background-image: url('../images/Group-178.svg');
+  background-position: 50% 0;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: scroll;
+}
+
+.webcontainer {
+  z-index: 100;
+  min-width: auto;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 19px 132px 0;
+  position: relative;
+}
+
+.backhistorieta {
+  z-index: 1000;
+  background-image: url('../images/yellowBack.png');
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  background-size: contain;
+  flex-flow: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  height: 900px;
+  margin-left: 112px;
+  display: flex;
+  position: relative;
+}
+
+.logoceteco {
+  width: 160px;
+}
+
+.containertitle {
+  flex-flow: column;
+  padding: 40px;
+  display: flex;
+}
+
+.logobusca12 {
+  width: 550px;
+  margin-top: -54px;
+  margin-left: 39px;
+}
+
+.girl {
+  width: 400px;
+  margin-top: -20px;
+  margin-bottom: 176px;
+  margin-left: 85px;
+}
+
+.div-block-3 {
+  text-align: left;
+  background-image: url('../images/backKid.png');
+  background-position: 50%;
+  background-repeat: no-repeat;
+  background-size: contain;
+  justify-content: flex-start;
+  align-items: flex-start;
+  width: 400px;
+  height: 500px;
+  margin-left: -41px;
+  display: flex;
+}
+
+.backamarillo {
+  z-index: 2;
+  justify-content: flex-end;
+  align-items: flex-start;
+  margin-top: -708px;
+  margin-right: 46px;
+  display: flex;
+  position: relative;
+}
+
+.boy {
+  width: 370px;
+  height: 500px;
+  margin-top: -191px;
+  margin-left: 61px;
+}
+
+.containerkids {
+  flex-flow: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+  height: auto;
+  display: flex;
+}
+
+.div-block-6 {
+  z-index: 10000;
+  flex-flow: row;
+  justify-content: flex-start;
+  align-items: center;
+  width: 100%;
+  margin-top: 83px;
+  padding: 19px;
+  display: flex;
+  position: relative;
+}
+
+.label2 {
+  width: 35%;
+  margin-right: 29px;
+}
+
+.latasceteco {
+  width: 65%;
+}
+
+.containernumber {
+  flex-flow: row;
+  background-image: url('../images/backpasos.png');
+  justify-content: center;
+  background-repeat: no-repeat;
+  align-items: center;
+  width: 100%;
+  margin-top: -50px;
+  margin-bottom: 49px;
+  padding: 60px 20px 50px 60px;
+  display: flex;
+}
+
+.number {
+  flex-flow: row;
+  justify-content: flex-start;
+  align-items: center;
+  width: 33%;
+  margin-right: 22px;
+  display: flex;
+}
+
+.image-7 {
+  height: 100px;
+  margin-right: 13px;
+}
+
+.text-block {
+  color: #fff;
+  font-size: 16px;
+}
+
+.button {
+  text-align: center;
+  background-color: #8a0202;
+  border-radius: 10px;
+  justify-content: center;
+  align-items: center;
+  width: 200px;
+  padding: 16px;
+  font-size: 20px;
+  font-weight: 700;
+  box-shadow: -1px 6px 20px 6px rgba(245, 200, 200, .49);
+}
+
+.botoncontainer {
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+  display: flex;
+}
+
+@media screen and (max-width: 991px) {
+  .body {
+    background-size: auto;
+  }
+
+  .webcontainer {
+    padding-left: 30px;
+  }
+
+  .backhistorieta {
+    height: 740px;
+    margin-left: 0;
+  }
+
+  .containertitle {
+    padding-top: 16px;
+  }
+
+  .logobusca12 {
+    width: 450px;
+    margin-top: -39px;
+  }
+
+  .girl {
+    width: 320px;
+    margin-top: -39px;
+    margin-left: 99px;
+  }
+
+  .div-block-3 {
+    width: 300px;
+    margin-left: 0;
+  }
+
+  .backamarillo {
+    margin-top: -603px;
+    margin-right: 17px;
+  }
+
+  .boy {
+    width: 280px;
+    height: 400px;
+    margin-top: -179px;
+    margin-left: -1px;
+  }
+
+  .div-block-6 {
+    margin-top: -9px;
+  }
+
+  .containernumber {
+    padding-right: 0;
+    padding-left: 30px;
+  }
+
+  .number {
+    width: 34%;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  .webcontainer {
+    padding-left: 4px;
+  }
+
+  .backhistorieta {
+    height: 700px;
+  }
+
+  .containertitle {
+    padding-left: 17px;
+  }
+
+  .logobusca12 {
+    width: 350px;
+    margin-top: -31px;
+    margin-left: 65px;
+  }
+
+  .girl {
+    width: 250px;
+    margin-top: -17px;
+    margin-bottom: 80px;
+    margin-left: 89px;
+  }
+
+  .div-block-3 {
+    width: 250px;
+  }
+
+  .backamarillo {
+    margin-top: -561px;
+    margin-right: -17px;
+  }
+
+  .boy {
+    width: 220px;
+    height: 300px;
+    margin-top: -131px;
+  }
+
+  .div-block-6 {
+    flex-flow: column;
+  }
+
+  .label2 {
+    width: 60%;
+    margin-bottom: 25px;
+  }
+
+  .latasceteco {
+    width: 100%;
+  }
+
+  .containernumber {
+    flex-flow: column;
+    margin-bottom: 21px;
+    padding-left: 30px;
+  }
+
+  .number {
+    width: 80%;
+    margin-bottom: 21px;
+    padding-left: 15px;
+  }
+
+  .image-7 {
+    margin-left: -1px;
+  }
+
+  .image-7.dos {
+    margin-left: -26px;
+  }
+
+  .image-7.tres {
+    margin-left: -36px;
+  }
+
+  .botoncontainer {
+    padding-top: 0;
+  }
+}
+
+@media screen and (max-width: 479px) {
+  .webcontainer {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .backhistorieta {
+    background-image: url('../images/movil.png');
+    background-position: 0 0;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 700px;
+  }
+
+  .logoceteco {
+    width: 150px;
+    margin-bottom: 9px;
+  }
+
+  .containertitle {
+    flex-flow: column;
+    justify-content: center;
+    align-items: center;
+    padding: 13px 11px 11px;
+  }
+
+  .logobusca12 {
+    width: 400px;
+    margin-top: 5px;
+    margin-left: 0;
+  }
+
+  .girl {
+    width: 250px;
+    margin-top: -37px;
+    margin-bottom: 0;
+    margin-left: 38px;
+  }
+
+  .div-block-3 {
+    height: 300px;
+    margin-top: -64px;
+    margin-right: 5px;
+    display: block;
+  }
+
+  .backamarillo {
+    justify-content: flex-end;
+    align-items: flex-start;
+    margin-top: -42px;
+    margin-right: 0;
+    display: none;
+  }
+
+  .boy {
+    width: 180px;
+    height: 250px;
+    margin-top: -54px;
+    margin-left: 130px;
+  }
+
+  .containerkids {
+    flex-flow: column;
+    display: none;
+  }
+
+  .div-block-6 {
+    margin-top: -39px;
+  }
+
+  .label2 {
+    width: 100%;
+    margin-right: 0;
+  }
+
+  .containernumber {
+    justify-content: center;
+    align-items: flex-start;
+    padding-left: 50px!important;
+    margin-bottom: 0px;
+  }
+
+  .number {
+    width: 90%;
+    margin-right: 0;
+  }
+
+  .image-7 {
+    height: 66px;
+    margin-left: -8px;
+    margin-right: 16px;
+  }
+
+  .image-7.dos {
+    margin-left: -22px;
+    margin-right: 18px;
+  }
+
+  .image-7.tres {
+    margin-left: -28px;
+    margin-right: 21px;
+  }
+}
+
+
+
+</style>
