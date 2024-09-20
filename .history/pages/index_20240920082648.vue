@@ -86,11 +86,7 @@
 
                 <div v-if="selectedFile && !uploading" class="upload-preview">
                   <img :src="imageUrl" alt="Factura" style="max-width: 100%; height: auto;">
-
-                  <el-button @click="handleRemove" type="danger" style="margin-top: 10px; font-size: 20px;">
-                    <Icon icon="material-symbols:delete" />
-
-                  </el-button>
+                  <el-button @click="handleRemove" type="danger" icon="el-icon-delete" circle></el-button>
                 </div>
               </div>
               <div class="terms-section">
@@ -127,7 +123,6 @@ import { Plus } from '@element-plus/icons-vue'
 import { v4 as uuidv4 } from 'uuid'
 import { useNuxtApp } from '#app'
 import { ElMessageBox } from 'element-plus';
-import {Icon} from '@iconify/vue';
 
 
 const { $supabase } = useNuxtApp()
@@ -224,59 +219,44 @@ const resetForm = () => {
   fileList.value = []
   selectedFile.value = null
 }
-const handleFileChange = (file) => {
-  selectedFile.value = file
-  imageUrl.value = URL.createObjectURL(file.raw)
+
+const handleFileChange = (file, fileList) => {
+  if (fileList.length > 1) {
+    handleRemove(fileList[0], fileList);
+  }
+  if (file) {
+    selectedFile.value = file;
+    imageUrl.value = URL.createObjectURL(file.raw);
+  }
 }
 
-const handleRemove = () => {
-  selectedFile.value = null;
+const handleRemove = (file, fileList) => {
+  fileList.length = 0;
   imageUrl.value = null;
-  progress.value = 0;
+  selectedFile.value = null;
 }
 
 const handleExceed = () => {
   ElMessage.warning('Solo puedes subir un archivo')
 }
 
-const beforeUpload = async (file) => {
-  uploading.value = true;
-  progress.value = 0;
+const uploadFileToSupabase = async (file) => {
+  if (!file) return null
 
-  const uploadUrl = await uploadFileToSupabase(file.raw);
+  const uuid = uuidv4()
+  const fileName = `cetecogenio/${uuid}-${file.name}`
+  const { data, error } = await $supabase.storage.from('storage').upload(fileName, file)
 
-  if (uploadUrl) {
-    selectedFile.value.url = uploadUrl; // Guarda la URL del archivo subido
-    ElMessage.success('Archivo subido correctamente');
-  } else {
-    ElMessage.error('Error al subir el archivo');
+  if (error) {
+    console.error('Error al subir archivo:', error)
+    return null
   }
 
-  uploading.value = false;
+  return `https://wtzcjehvfofuphkmvsru.supabase.co/storage/v1/object/public/storage/${fileName}`
 }
 
-const uploadFileToSupabase = async (file) => {
-  const uuid = uuidv4();
-  const fileName = `cetecogenio/${uuid}-${file.name}`;
-  
-  try {
-    const { data, error } = await $supabase
-      .storage
-      .from('storage')
-      .upload(fileName, file, {
-        onUploadProgress: (event) => {
-          progress.value = Math.round((event.loaded * 100) / event.total);
-        }
-      });
 
-    if (error) throw error;
 
-    return `https://wtzcjehvfofuphkmvsru.supabase.co/storage/v1/object/public/storage/${fileName}`;
-  } catch (error) {
-    console.error('Error al subir archivo:', error);
-    return null;
-  }
-};
 
 </script>
 

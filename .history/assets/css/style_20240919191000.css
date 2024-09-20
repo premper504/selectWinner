@@ -10,11 +10,7 @@ body{
   font-family: Tahoma, Geneva, sans-serif;
 }
 
-.upload-placeholder{
-padding: 20px!important;
-}
-
-
+..upload-placeholder[data-v-0c1cfc70]
 
 .el-upload--picture-card{
   width: 100%!important;

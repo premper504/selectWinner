@@ -86,11 +86,7 @@
 
                 <div v-if="selectedFile && !uploading" class="upload-preview">
                   <img :src="imageUrl" alt="Factura" style="max-width: 100%; height: auto;">
-
-                  <el-button @click="handleRemove" type="danger" style="margin-top: 10px; font-size: 20px;">
-                    <Icon icon="material-symbols:delete" />
-
-                  </el-button>
+                  <el-button @click="handleRemove" type="danger" icon="el-icon-delete" circle></el-button>
                 </div>
               </div>
               <div class="terms-section">
@@ -127,7 +123,6 @@ import { Plus } from '@element-plus/icons-vue'
 import { v4 as uuidv4 } from 'uuid'
 import { useNuxtApp } from '#app'
 import { ElMessageBox } from 'element-plus';
-import {Icon} from '@iconify/vue';
 
 
 const { $supabase } = useNuxtApp()
@@ -256,27 +251,22 @@ const beforeUpload = async (file) => {
 }
 
 const uploadFileToSupabase = async (file) => {
-  const uuid = uuidv4();
-  const fileName = `cetecogenio/${uuid}-${file.name}`;
-  
-  try {
-    const { data, error } = await $supabase
-      .storage
-      .from('storage')
-      .upload(fileName, file, {
-        onUploadProgress: (event) => {
-          progress.value = Math.round((event.loaded * 100) / event.total);
-        }
-      });
+  if (!file) return null
 
-    if (error) throw error;
+  const uuid = uuidv4()
+  const fileName = `cetecogenio/${uuid}-${file.name}`
+  const { data, error } = await $supabase.storage.from('storage').upload(fileName, file)
 
-    return `https://wtzcjehvfofuphkmvsru.supabase.co/storage/v1/object/public/storage/${fileName}`;
-  } catch (error) {
-    console.error('Error al subir archivo:', error);
-    return null;
+  if (error) {
+    console.error('Error al subir archivo:', error)
+    return null
   }
-};
+
+  return `https://wtzcjehvfofuphkmvsru.supabase.co/storage/v1/object/public/storage/${fileName}`
+}
+
+
+
 
 </script>
 

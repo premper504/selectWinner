@@ -87,7 +87,7 @@
                 <div v-if="selectedFile && !uploading" class="upload-preview">
                   <img :src="imageUrl" alt="Factura" style="max-width: 100%; height: auto;">
 
-                  <el-button @click="handleRemove" type="danger" style="margin-top: 10px; font-size: 20px;">
+                  <el-button @click="handleRemove" type="danger" style="margin-top: 10px;">
                     <Icon icon="material-symbols:delete" />
 
                   </el-button>

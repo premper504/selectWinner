@@ -87,10 +87,10 @@
                 <div v-if="selectedFile && !uploading" class="upload-preview">
                   <img :src="imageUrl" alt="Factura" style="max-width: 100%; height: auto;">
 
-                  <el-button @click="handleRemove" type="danger" style="margin-top: 10px; font-size: 20px;">
+                  <div @click="handleRemove" style="color: red; background-color: blue;">
                     <Icon icon="material-symbols:delete" />
 
-                  </el-button>
+                  </div>
                 </div>
               </div>
               <div class="terms-section">
@@ -127,7 +127,6 @@ import { Plus } from '@element-plus/icons-vue'
 import { v4 as uuidv4 } from 'uuid'
 import { useNuxtApp } from '#app'
 import { ElMessageBox } from 'element-plus';
-import {Icon} from '@iconify/vue';
 
 
 const { $supabase } = useNuxtApp()
