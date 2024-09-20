@@ -6,7 +6,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'CETECO - El Genio Ceteco cumple tus deseos ',
+      title: 'Ceteco ',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'description', content: 'CETECO - El Genio Ceteco cumple tus deseos' }
