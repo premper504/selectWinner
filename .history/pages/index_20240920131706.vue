@@ -103,7 +103,7 @@
               <div class="terms-section">
                 <input type="checkbox" id="terms" v-model="acceptedTerms">
                 <label for="terms" class="terms-text">
-                  Acepto los <a href="https://wtzcjehvfofuphkmvsru.supabase.co/storage/v1/object/public/storage/REGLAMENTO_%20CETECO_GENIO%20CETECO_correctos.pdf" target="_blank">Términos y Condiciones</a>
+                  Acepto los <a href="https://example.com/terminos" target="_blank">Términos y Condiciones</a>
                 </label>
               </div>
 
