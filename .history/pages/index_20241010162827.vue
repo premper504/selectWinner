@@ -35,7 +35,7 @@
                 <el-input v-model="form.dni"></el-input>
               </el-form-item>
 
-              <el-form-item label="Teléfono (Sin guiones ni espacios)" prop="phone">
+              <el-form-item label="Teléfono " prop="phone">
                 <el-input v-model="form.phone"></el-input>
               </el-form-item>
 
