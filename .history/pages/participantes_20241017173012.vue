@@ -43,7 +43,7 @@
             </template>
           </el-table-column>
   
-          <el-table-column prop="name" label="Nombre" width="300" fixed="left"/>
+          <el-table-column prop="name" label="Nombre" width="300" />
           <el-table-column prop="dni" label="Identidad" width="150" />
           <el-table-column prop="phone" label="Teléfono" width="150" />
           <el-table-column prop="email" label="Email" width="320" />
