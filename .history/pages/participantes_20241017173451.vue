@@ -7,33 +7,16 @@
       </section>
   
       <div class="maxwidth container">
-        <div class="header-container">
-          <div class="header-right">
-            <!-- Cuadro de registros -->
-            <div>
-              <span><b>Participantes: </b></span> {{ totalRecords }}
-            </div>
-  
-            <!-- Filtro de fecha -->
-            <div class="date-filter">
-              <el-date-picker
-                v-model="dateRange"
-                type="daterange"
-                range-separator="Hasta"
-                start-placeholder="Fecha inicio"
-                end-placeholder="Fecha fin"
-                format="DD/MM/YYYY"
-                value-format="YYYY-MM-DD"
-                @change="handleDateChange"
-              />
-              <el-button @click="clearDateFilter" type="info" plain>Limpiar filtro</el-button>
-            </div>
-  
-            <!-- Botón para descargar CSV -->
-            <el-button @click="downloadCSV" type="primary" :loading="isDownloading">
-              {{ isDownloading ? 'Descargando...' : 'Descargar CSV' }}
-            </el-button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <!-- Cuadro de registros -->
+          <div>
+            <span><b>Participantes: </b></span> {{ totalRecords }}
           </div>
+  
+          <!-- Botón para descargar CSV -->
+          <el-button @click="downloadCSV" type="primary" :loading="isDownloading">
+            {{ isDownloading ? 'Descargando...' : 'Descargar CSV' }}
+          </el-button>
         </div>
   
         <!-- Cargador global -->
@@ -44,7 +27,7 @@
           v-if="winners.length > 0" 
           :data="winners" 
           style="width: 100%"
-          height="68vh"
+          height="67vh"
           :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
         >
           <el-table-column label="#" width="50" fixed="left">
@@ -53,7 +36,7 @@
             </template>
           </el-table-column>
   
-          <el-table-column prop="id" label="ID" width="80" fixed="left" />
+          <el-table-column prop="id" label="ID" width="80"  />
           
           <!-- Columna para la fecha con slot para formatear -->
           <el-table-column label="Fecha creación" width="150">
@@ -123,26 +106,16 @@
   const totalRecords = ref(0)
   const isLoading = ref(true)
   const isDownloading = ref(false)
-  const dateRange = ref([])
   
-  // Función para obtener los datos con paginación y filtro de fecha
+  // Función para obtener los datos con paginación
   const fetchWinners = async (page = 1) => {
     isLoading.value = true
     try {
-      let query = $supabase
+      const { data, error, count } = await $supabase
         .from(PARTICIPANTS_TABLE)
         .select(`*`, { count: 'exact' })
-        .order('created_at', { ascending: false })
-  
-      // Aplicar filtro de fecha si está establecido
-      if (dateRange.value && dateRange.value.length === 2) {
-        query = query
-          .gte('created_at', dateRange.value[0])
-          .lte('created_at', `${dateRange.value[1]}T23:59:59`)
-      }
-  
-      const { data, error, count } = await query
-        .range((page - 1) * pageSize.value, page * pageSize.value - 1)
+        .order('created_at', { ascending: false })  // Ordenar por fecha de creación, descendente
+        .range((page - 1) * pageSize.value, page * pageSize.value - 1)  // Paginación
   
       if (error) {
         console.error('Error fetching winners:', error)
@@ -157,19 +130,6 @@
     } finally {
       isLoading.value = false
     }
-  }
-  
-  // Función para manejar el cambio de fecha
-  const handleDateChange = () => {
-    page.value = 1  // Resetear a la primera página
-    fetchWinners()
-  }
-  
-  // Función para limpiar el filtro de fecha
-  const clearDateFilter = () => {
-    dateRange.value = []
-    page.value = 1  // Resetear a la primera página
-    fetchWinners()
   }
   
   // Función para manejar el cambio de página
@@ -189,19 +149,10 @@
   const downloadCSV = async () => {
     isDownloading.value = true
     try {
-      let query = $supabase
+      const { data, error } = await $supabase
         .from(PARTICIPANTS_TABLE)
         .select(`*`)
-        .order('created_at', { ascending: false })
-  
-      // Aplicar filtro de fecha si está establecido
-      if (dateRange.value && dateRange.value.length === 2) {
-        query = query
-          .gte('created_at', dateRange.value[0])
-          .lte('created_at', `${dateRange.value[1]}T23:59:59`)
-      }
-  
-      const { data, error } = await query
+        .order('created_at', { ascending: false })  // Ordenar por fecha de creación, descendente
   
       if (error) {
         console.error('Error fetching all data:', error)
@@ -211,10 +162,7 @@
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
         const link = document.createElement('a')
         link.href = URL.createObjectURL(blob)
-        const fileName = dateRange.value && dateRange.value.length === 2
-          ? `participantes_${dateRange.value[0]}_${dateRange.value[1]}.csv`
-          : 'todos_los_participantes.csv'
-        link.setAttribute('download', fileName)
+        link.setAttribute('download', 'participantes.csv')
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
@@ -248,36 +196,16 @@
     flex-grow: 1;
     background-color: white;
     padding: 20px;
-    width: 95%;
+    width: 100%;
     border-radius: 8px;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    margin-bottom: 10px !important;
   }
   
   .maxwidth {
     max-width: 1200px;
     margin: auto;
-  }
-  
-  .header-container {
-    display: flex;
-    padding-bottom: 20px;
-  }
-  
-  .date-filter {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    width: 100%;
-    justify-content: space-between;
   }
   
   /* Asegurarse de que el contenido de las celdas no se desborde */
@@ -292,18 +220,5 @@
     padding: 20px;
     font-size: 16px;
     color: #909399;
-  }
-  
-  @media (max-width: 768px) {
-    .header-container {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 10px;
-    }
-  
-    .date-filter, .header-right {
-      width: 100%;
-      justify-content: space-between;
-    }
   }
   </style>

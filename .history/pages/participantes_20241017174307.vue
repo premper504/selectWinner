@@ -8,27 +8,30 @@
   
       <div class="maxwidth container">
         <div class="header-container">
+      
+  
           <div class="header-right">
             <!-- Cuadro de registros -->
             <div>
               <span><b>Participantes: </b></span> {{ totalRecords }}
             </div>
   
-            <!-- Filtro de fecha -->
-            <div class="date-filter">
-              <el-date-picker
-                v-model="dateRange"
-                type="daterange"
-                range-separator="Hasta"
-                start-placeholder="Fecha inicio"
-                end-placeholder="Fecha fin"
-                format="DD/MM/YYYY"
-                value-format="YYYY-MM-DD"
-                @change="handleDateChange"
-              />
-              <el-button @click="clearDateFilter" type="info" plain>Limpiar filtro</el-button>
-            </div>
-  
+
+                <!-- Filtro de fecha -->
+          <div class="date-filter">
+            <el-date-picker
+              v-model="dateRange"
+              type="daterange"
+              range-separator="Hasta"
+              start-placeholder="Fecha inicio"
+              end-placeholder="Fecha fin"
+              format="DD/MM/YYYY"
+              value-format="YYYY-MM-DD"
+              @change="handleDateChange"
+            />
+            <el-button @click="clearDateFilter" type="info" plain>Limpiar filtro</el-button>
+          </div>
+
             <!-- Botón para descargar CSV -->
             <el-button @click="downloadCSV" type="primary" :loading="isDownloading">
               {{ isDownloading ? 'Descargando...' : 'Descargar CSV' }}
@@ -211,10 +214,7 @@
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
         const link = document.createElement('a')
         link.href = URL.createObjectURL(blob)
-        const fileName = dateRange.value && dateRange.value.length === 2
-          ? `participantes_${dateRange.value[0]}_${dateRange.value[1]}.csv`
-          : 'todos_los_participantes.csv'
-        link.setAttribute('download', fileName)
+        link.setAttribute('download', 'participantes.csv')
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
@@ -248,12 +248,12 @@
     flex-grow: 1;
     background-color: white;
     padding: 20px;
-    width: 95%;
+    width: 100%;
     border-radius: 8px;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    margin-bottom: 10px !important;
+    margin-bottom: 10px;
   }
   
   .maxwidth {
@@ -264,6 +264,7 @@
   .header-container {
     display: flex;
     padding-bottom: 20px;
+
   }
   
   .date-filter {
