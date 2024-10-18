@@ -15,6 +15,9 @@
             @click="startSelection"
           />
         </div>
+
+
+
       </div>
     </section>
 
@@ -29,8 +32,8 @@
         <div class="containerGanador">
           <div class="blur-overlay top"></div>
           <div ref="namesContainer" class="names-container">
-            <div v-for="(participant, index) in displayNames" :key="index" class="name-item">
-              {{ participant.name }}
+            <div v-for="(name, index) in displayNames" :key="index" class="name-item">
+              {{ name.name }}
             </div>
           </div>
           <div class="blur-overlay bottom"></div>
@@ -52,7 +55,7 @@ const { $supabase } = useNuxtApp()
 const PARTICIPANTS_TABLE = 'participantes_genio'
 
 // Variables
-const participants = ref([])
+const names = ref([])
 const namesContainer = ref(null)
 const displayNames = ref([])
 const showResult = ref(false)
@@ -79,10 +82,10 @@ const spinSlotMachine = async () => {
   try {
     const duration = 7
     const itemHeight = 60
-    const winnerIndex = Math.floor(Math.random() * participants.value.length)
+    const winnerIndex = Math.floor(Math.random() * names.value.length)
 
     // Calculamos la distancia total y la animación
-    const totalDistance = participants.value.length * itemHeight
+    const totalDistance = names.value.length * itemHeight
 
     // Animación inicial del scroll de nombres
     await gsap.to(namesContainer.value, {
@@ -100,7 +103,7 @@ const spinSlotMachine = async () => {
     })
 
     // Marcar ganador y crear entrada en la tabla de ganadores
-    const winner = participants.value[winnerIndex]
+    const winner = names.value[winnerIndex]
     await markWinner(winner.id) // Marcamos el ganador en la tabla `participantes_genio`
     await createWinnerEntry(winner) // Creamos la entrada en `ganadoresCeteco`
 
@@ -167,7 +170,7 @@ const createWinnerEntry = async (winner) => {
   const { data, error } = await $supabase
     .from('ganadoresCeteco')
     .insert({
-      ganadorName: winner.name,
+      ganadorName: winner.nombre,
       ganadorDepartamento: winner.departamento,
       ganadorTelefono: winner.telefono
     })
@@ -191,9 +194,8 @@ const getGenioData = async () => {
       .limit(900)
 
     if (error) throw error
+    console.log('Datos obtenidos Participantes:', data)
 
-    participants.value = shuffleNames(data) // Mezclar participantes
-    displayNames.value = [...participants.value] // Asignar a displayNames sin duplicar
   } catch (error) {
     console.error('Error al obtener datos:', error)
   }
@@ -204,6 +206,7 @@ onMounted(() => {
   getGenioData()
 })
 </script>
+
 
 
 <style scoped>

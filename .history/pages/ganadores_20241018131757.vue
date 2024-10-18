@@ -18,10 +18,14 @@
             </template>
           </el-table-column>
   
-          <el-table-column prop="ganadorName" label="Nombre" width="320" />
-          <el-table-column prop="ganadorDepartamento" label="Departamento" width="200" />
-          <el-table-column prop="ganadorTelefono" label="Teléfono" width="150" />
-  
+          <el-table-column prop="nombre" label="Nombre" width="200" />
+          <el-table-column prop="ganadorUser.dni" label="Identidad" width="200" />
+          <el-table-column prop="ganadorUser.phone" label="Teléfono" width="150" />
+          <el-table-column prop="ganadorUser.email" label="Email" width="200" />
+          <el-table-column prop="ganadorUser.state" label="Departamento" width="150" />
+          <el-table-column prop="ganadorUser.place" label="Lugar de Compra" width="200" />
+          <el-table-column prop="ganadorUser.reciepCode" label="Código" width="150" />
+          <el-table-column prop="ganadorUser.product" label="Producto" width="200" />
         </el-table>
   
         <!-- Mostrar mensaje de carga -->
@@ -57,7 +61,10 @@
     try {
       const { data, error } = await $supabase
         .from('ganadoresCeteco')
-        .select(`*`)
+        .select(`
+          *,
+          ganadorUser(*)
+        `)
   
       if (error) {
         console.error('Error fetching winners:', error)

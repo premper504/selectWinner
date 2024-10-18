@@ -18,9 +18,9 @@
             </template>
           </el-table-column>
   
-          <el-table-column prop="ganadorName" label="Nombre" width="320" />
-          <el-table-column prop="ganadorDepartamento" label="Departamento" width="200" />
-          <el-table-column prop="ganadorTelefono" label="Teléfono" width="150" />
+          <el-table-column prop="nombre" label="Nombre" width="200" />
+          <el-table-column prop="departamento" label="Departmaento" width="200" />
+          <el-table-column prop="telefono" label="Teléfono" width="150" />
   
         </el-table>
   
@@ -57,7 +57,10 @@
     try {
       const { data, error } = await $supabase
         .from('ganadoresCeteco')
-        .select(`*`)
+        .select(`
+          *,
+          ganadorUser(*)
+        `)
   
       if (error) {
         console.error('Error fetching winners:', error)

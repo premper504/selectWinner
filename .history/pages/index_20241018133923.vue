@@ -30,7 +30,7 @@
           <div class="blur-overlay top"></div>
           <div ref="namesContainer" class="names-container">
             <div v-for="(participant, index) in displayNames" :key="index" class="name-item">
-              {{ participant.name }}
+              {{ participant.nombres }}
             </div>
           </div>
           <div class="blur-overlay bottom"></div>
@@ -167,7 +167,7 @@ const createWinnerEntry = async (winner) => {
   const { data, error } = await $supabase
     .from('ganadoresCeteco')
     .insert({
-      ganadorName: winner.name,
+      ganadorName: winner.nombres,
       ganadorDepartamento: winner.departamento,
       ganadorTelefono: winner.telefono
     })
@@ -204,6 +204,8 @@ onMounted(() => {
   getGenioData()
 })
 </script>
+
+
 
 
 <style scoped>
