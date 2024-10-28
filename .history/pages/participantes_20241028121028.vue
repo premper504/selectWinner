@@ -45,8 +45,8 @@
         :data="winners" 
         style="width: 100%" 
         border
-        :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
-        >
+        :header-cell-style="{ background: '#007BFF', color: '#FFFFFF' }"
+      >
         <!-- Columna personalizada para el índice -->
         <el-table-column label="#" width="50" fixed="left">
           <template #default="scope">

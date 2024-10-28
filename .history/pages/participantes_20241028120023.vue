@@ -247,7 +247,7 @@
   .container {
     flex-grow: 1;
     background-color: white;
-    padding: 10px;
+    padding: 0px;
     width: 95%;
     border-radius: 8px;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);

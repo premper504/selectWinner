@@ -11,7 +11,7 @@
         <div class="header-right">
           <!-- Cuadro de registros -->
           <div>
-            <span><b>Ganadores: </b></span> {{ totalRecords }}
+            <span><b>Participantes: </b></span> {{ totalRecords }}
           </div>
 
           <!-- Filtro de fecha -->
@@ -43,30 +43,34 @@
       <el-table 
         v-if="winners.length > 0" 
         :data="winners" 
-        style="width: 100%" 
+        style="width: 100%"
+        height="68vh"
         border
         :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
-        >
-        <!-- Columna personalizada para el índice -->
+      >
         <el-table-column label="#" width="50" fixed="left">
           <template #default="scope">
             {{ (page - 1) * pageSize + scope.$index + 1 }}
           </template>
         </el-table-column>
 
-        <el-table-column prop="id" label="ID" width="150" />
+        <el-table-column prop="id" label="ID" width="80"  />
         
         <!-- Columna para la fecha con slot para formatear -->
-        <el-table-column label="Fecha de sorteo" width="200">
+        <el-table-column label="Fecha creación" width="150">
           <template #default="scope">
             {{ formatDate(scope.row.created_at) }}
           </template>
         </el-table-column>
 
-        <el-table-column prop="ganadorName" label="Nombre" width="320" fixed="left"/>
-        <el-table-column prop="ganadorDepartamento" label="Departamento" width="200" />
-        <el-table-column prop="ganadorTelefono" label="Teléfono" width="150" />
-
+        <el-table-column prop="name" label="Nombre" width="300" fixed="left" />
+        <el-table-column prop="dni" label="Identidad" width="150" />
+        <el-table-column prop="phone" label="Teléfono" width="150" />
+        <el-table-column prop="email" label="Email" width="320" />
+        <el-table-column prop="state" label="Departamento" width="150" />
+        <el-table-column prop="place" label="Lugar de Compra" width="240" />
+        <el-table-column prop="reciepCode" label="Código" width="200" />
+        <el-table-column prop="product" label="Producto" width="250" />
       </el-table>
 
       <!-- Paginación -->
@@ -98,7 +102,7 @@ import { ElMessage, ElLoading } from 'element-plus'
 import Papa from 'papaparse'  // Para generar el CSV
 
 // Definir el nombre de la tabla como una constante
-const WINNERS_TABLE = 'ganadoresCeteco'
+const PARTICIPANTS_TABLE = 'ceteco_genio'
 
 // Función para formatear la fecha y hora
 const formatDate = (dateString) => {
@@ -127,7 +131,7 @@ const fetchWinners = async (page = 1) => {
   isLoading.value = true
   try {
     let query = $supabase
-      .from(WINNERS_TABLE)
+      .from(PARTICIPANTS_TABLE)
       .select(`*`, { count: 'exact' })
       .order('created_at', { ascending: false })
 
@@ -187,7 +191,7 @@ const downloadCSV = async () => {
   isDownloading.value = true
   try {
     let query = $supabase
-      .from(WINNERS_TABLE)
+      .from(PARTICIPANTS_TABLE)
       .select(`*`)
       .order('created_at', { ascending: false })
 
@@ -209,8 +213,8 @@ const downloadCSV = async () => {
       const link = document.createElement('a')
       link.href = URL.createObjectURL(blob)
       const fileName = dateRange.value && dateRange.value.length === 2
-        ? `ganadores_${dateRange.value[0]}_${dateRange.value[1]}.csv`
-        : 'todos_los_ganadores.csv'
+        ? `participantes_${dateRange.value[0]}_${dateRange.value[1]}.csv`
+        : 'todos_los_participantes.csv'
       link.setAttribute('download', fileName)
       document.body.appendChild(link)
       link.click()
@@ -231,19 +235,30 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.main-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
 .logo {
   width: 200px;
 }
 
 .container {
+  flex-grow: 1;
   background-color: white;
-  padding: 15px;
-  width: 100%;
-  min-height: 150px;
+  padding: 20px;
+  width: 95%;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px !important;
 }
 
 .maxwidth {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: auto;
 }
 

@@ -46,8 +46,7 @@
         v-show="showCongrats"
         icon="el-icon-refresh"
         @click="resetAndSelectNewWinner"
-        class="newGanadorB
-"
+        class="ganadorButon"
         
       >
         Nuevo Ganador
@@ -226,9 +225,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.ganadorB {
-  width: 400px;
-  padding: 100px;
+.ganadorB
+{
+  border-radius: 15px;
+  background-color: red!important;
+  color: rr
 }
 
 .header-genio {
@@ -324,13 +325,7 @@ onMounted(() => {
 }
 
 
-.newGanadorB
-{
-  border-radius: 15px;
-  background-color: transparent;
-  color:red; 
-  border:1px solid red;
-}
+
 
 @media screen and (max-width: 768px) {
   .ganadorB {

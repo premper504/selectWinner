@@ -329,7 +329,7 @@ onMounted(() => {
   border-radius: 15px;
   background-color: transparent;
   color:red; 
-  border:1px solid red;
+  border:slid;
 }
 
 @media screen and (max-width: 768px) {

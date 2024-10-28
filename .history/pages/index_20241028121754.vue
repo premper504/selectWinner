@@ -40,19 +40,16 @@
       <!-- Texto de Felicitaciones -->
       <div ref="congratsText" class="congrats-text" v-show="showCongrats">FELICIDADES</div>
       
-      <div class="newGanador"> 
       <!-- Botón para seleccionar nuevo ganador -->
-      <el-button 
+      <el-button
         v-show="showCongrats"
         icon="el-icon-refresh"
+        type="success"
         @click="resetAndSelectNewWinner"
-        class="newGanadorB
-"
-        
+        style="margin-top: 20px;"
       >
         Nuevo Ganador
       </el-button>
-    </div>
     </section>
   </div>
 </template>
@@ -313,23 +310,6 @@ onMounted(() => {
   align-items: center;
   padding-top: 0px;
   padding-bottom: 70px;
-}
-
-.newGanador{
-  width: 100%;
-  display: flex;
-  margin-bottom: 50px;
-  padding-bottom: 50px;
-  justify-content: center;
-}
-
-
-.newGanadorB
-{
-  border-radius: 15px;
-  background-color: transparent;
-  color:red; 
-  border:1px solid red;
 }
 
 @media screen and (max-width: 768px) {

@@ -46,8 +46,7 @@
         v-show="showCongrats"
         icon="el-icon-refresh"
         @click="resetAndSelectNewWinner"
-        class="newGanadorB
-"
+        class="ganadorButon"
         
       >
         Nuevo Ganador
@@ -324,13 +323,7 @@ onMounted(() => {
 }
 
 
-.newGanadorB
-{
-  border-radius: 15px;
-  background-color: transparent;
-  color:red; 
-  border:1px solid red;
-}
+
 
 @media screen and (max-width: 768px) {
   .ganadorB {
