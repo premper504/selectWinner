@@ -56,12 +56,19 @@
           <el-table-column prop="id" label="ID" width="80"  />
           
           <!-- Columna para la fecha con slot para formatear -->
-       
+          <el-table-column label="Fecha creación" width="150">
+            <template #default="scope">
+              {{ formatDate(scope.row.created_at) }}
+            </template>
+          </el-table-column>
   
           <el-table-column prop="name" label="Nombre" width="300" fixed="left" />
           <el-table-column prop="dni" label="Identidad" width="150" />
           <el-table-column prop="telefono" label="Teléfono" width="150" />
           <el-table-column prop="departamento" label="Departamento" width="150" />
+          <el-table-column prop="place" label="Lugar de Compra" width="240" />
+          <el-table-column prop="reciepCode" label="Código" width="200" />
+          <el-table-column prop="product" label="Producto" width="250" />
         </el-table>
   
         <!-- Paginación -->
