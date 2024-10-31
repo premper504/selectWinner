@@ -99,7 +99,7 @@
 
       <!-- Mostrar mensaje cuando no hay datos -->
       <div v-if="winners.length === 0 && !isLoading" class="no-data">
-        No se encontraron ganadores en las fechas seleccionadas
+        No hay datos disponibles.
       </div>
     </div>
   </div>

@@ -44,6 +44,7 @@
       <!-- Botón para seleccionar nuevo ganador -->
       <el-button 
         v-show="showCongrats"
+        icon="el-icon-refresh"
         @click="resetAndSelectNewWinner"
         class="newGanadorB
 "

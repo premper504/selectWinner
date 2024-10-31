@@ -44,6 +44,7 @@
       <!-- Botón para seleccionar nuevo ganador -->
       <el-button 
         v-show="showCongrats"
+        icon="el-icon-refresh"
         @click="resetAndSelectNewWinner"
         class="newGanadorB
 "
@@ -329,7 +330,7 @@ onMounted(() => {
   border-radius: 15px;
   background-color: red;
   color: white;
-
+  border:1px solid red;
 }
 
 @media screen and (max-width: 768px) {

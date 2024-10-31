@@ -99,7 +99,7 @@
 
       <!-- Mostrar mensaje cuando no hay datos -->
       <div v-if="winners.length === 0 && !isLoading" class="no-data">
-        No se encontraron ganadores en las fechas seleccionadas
+        No hay datos disponibles.
       </div>
     </div>
   </div>
@@ -283,8 +283,6 @@ onUnmounted(() => {
 })
 </script>
 
-
-
 <style scoped>
 .logo {
   width: 200px;
@@ -321,25 +319,10 @@ onUnmounted(() => {
   justify-content: space-between;
 }
 
-/* Estilos para la tabla */
-:deep(.el-table) {
-  width: 100% !important;
-}
-
-:deep(.el-table__cell) {
-  padding: 8px !important;
-}
-
 :deep(.el-table .cell) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* Ajuste para el contenido de las celdas */
-:deep(.el-table .cell) {
-  padding-left: 8px;
-  padding-right: 8px;
 }
 
 .no-data {

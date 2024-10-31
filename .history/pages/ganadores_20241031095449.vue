@@ -46,40 +46,27 @@
         style="width: 100%" 
         border
         :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
-        table-layout="auto"
-      >
-        <!-- Columna personalizada para el índice -->
-        <el-table-column 
-          label="#" 
-          width="50" 
-          fixed="left"
-          align="center"
         >
+        <!-- Columna personalizada para el índice -->
+        <el-table-column label="#" width="50" fixed="left">
           <template #default="scope">
             {{ (page - 1) * pageSize + scope.$index + 1 }}
           </template>
         </el-table-column>
 
-        <!-- Columna del nombre con el máximo espacio disponible -->
-        <el-table-column 
-          prop="ganadorName" 
-          label="Nombre" 
-          min-width="50%"
-          fixed="left"
-        />
-
-        <!-- Columnas con ancho proporcional -->
-        <el-table-column 
-          prop="ganadorDepartamento" 
-          label="Departamento" 
-          min-width="25%"
-        />
+      
         
-        <el-table-column 
-          prop="ganadorTelefono" 
-          label="Teléfono" 
-          min-width="25%"
-        />
+        <!-- Columna para la fecha con slot para formatear -->
+        <el-table-column label="Fecha de sorteo" width="200">
+          <template #default="scope">
+            {{ formatDate(scope.row.created_at) }}
+          </template>
+        </el-table-column>
+        
+
+        <el-table-column prop="ganadorName" label="Nombre" width="320" fixed="left"/>
+        <el-table-column prop="ganadorDepartamento" label="Departamento" width="200" />
+        <el-table-column prop="ganadorTelefono" label="Teléfono" width="150" />
 
       </el-table>
 
@@ -99,18 +86,19 @@
 
       <!-- Mostrar mensaje cuando no hay datos -->
       <div v-if="winners.length === 0 && !isLoading" class="no-data">
-        No se encontraron ganadores en las fechas seleccionadas
+        No hay datos disponibles.
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useNuxtApp } from '#app'
 import { ElMessage, ElLoading } from 'element-plus'
-import Papa from 'papaparse'
+import Papa from 'papaparse'  // Para generar el CSV
 
+// Definir el nombre de la tabla como una constante
 const WINNERS_TABLE = 'ganadoresCeteco'
 
 // Función para formatear la fecha y hora
@@ -126,12 +114,6 @@ const formatDate = (dateString) => {
   return `${day}/${month}/${year} ${hours}:${minutes}`
 }
 
-// Función para obtener la fecha de hoy en formato YYYY-MM-DD
-const getTodayDate = () => {
-  const today = new Date()
-  return today.toISOString().split('T')[0]
-}
-
 const { $supabase } = useNuxtApp()
 const winners = ref([])
 const page = ref(1)
@@ -139,39 +121,7 @@ const pageSize = ref(50)
 const totalRecords = ref(0)
 const isLoading = ref(true)
 const isDownloading = ref(false)
-const dateRange = ref([getTodayDate(), getTodayDate()])
-
-// Variable para almacenar la suscripción
-let subscription = null
-
-// Función para suscribirse a cambios en tiempo real
-const subscribeToRealtime = () => {
-  // Cancelar suscripción existente si hay una
-  if (subscription) {
-    subscription.unsubscribe()
-  }
-
-  subscription = $supabase
-    .channel('winners-changes')
-    .on(
-      'postgres_changes',
-      {
-        event: '*', // Escuchar inserts, updates y deletes
-        schema: 'public',
-        table: WINNERS_TABLE
-      },
-      (payload) => {
-        console.log('Realtime change received:', payload)
-        // Recargar datos cuando hay cambios
-        fetchWinners(page.value)
-        // Mostrar notificación
-        if (payload.eventType === 'INSERT') {
-          ElMessage.success('¡Nuevo ganador registrado!')
-        }
-      }
-    )
-    .subscribe()
-}
+const dateRange = ref([])
 
 // Función para obtener los datos con paginación y filtro de fecha
 const fetchWinners = async (page = 1) => {
@@ -182,10 +132,10 @@ const fetchWinners = async (page = 1) => {
       .select(`*`, { count: 'exact' })
       .order('created_at', { ascending: false })
 
-    // Aplicar filtro de fecha
+    // Aplicar filtro de fecha si está establecido
     if (dateRange.value && dateRange.value.length === 2) {
       query = query
-        .gte('created_at', `${dateRange.value[0]}T00:00:00`)
+        .gte('created_at', dateRange.value[0])
         .lte('created_at', `${dateRange.value[1]}T23:59:59`)
     }
 
@@ -197,7 +147,7 @@ const fetchWinners = async (page = 1) => {
       ElMessage.error('Error al obtener los datos')
     } else {
       winners.value = data
-      totalRecords.value = count
+      totalRecords.value = count  // Número total de registros
     }
   } catch (err) {
     console.error('Error in fetchWinners:', err)
@@ -209,28 +159,31 @@ const fetchWinners = async (page = 1) => {
 
 // Función para manejar el cambio de fecha
 const handleDateChange = () => {
-  page.value = 1
+  page.value = 1  // Resetear a la primera página
   fetchWinners()
 }
 
-// Función para limpiar el filtro de fecha y mostrar solo los de hoy
+// Función para limpiar el filtro de fecha
 const clearDateFilter = () => {
-  dateRange.value = [getTodayDate(), getTodayDate()]
-  page.value = 1
+  dateRange.value = []
+  page.value = 1  // Resetear a la primera página
   fetchWinners()
 }
 
+// Función para manejar el cambio de página
 const handlePageChange = (newPage) => {
   page.value = newPage
   fetchWinners(newPage)
 }
 
+// Función para manejar el cambio de tamaño de página
 const handleSizeChange = (newSize) => {
   pageSize.value = newSize
-  page.value = 1
+  page.value = 1  // Resetear a la primera página
   fetchWinners()
 }
 
+// Función para descargar CSV
 const downloadCSV = async () => {
   isDownloading.value = true
   try {
@@ -239,9 +192,10 @@ const downloadCSV = async () => {
       .select(`*`)
       .order('created_at', { ascending: false })
 
+    // Aplicar filtro de fecha si está establecido
     if (dateRange.value && dateRange.value.length === 2) {
       query = query
-        .gte('created_at', `${dateRange.value[0]}T00:00:00`)
+        .gte('created_at', dateRange.value[0])
         .lte('created_at', `${dateRange.value[1]}T23:59:59`)
     }
 
@@ -251,11 +205,13 @@ const downloadCSV = async () => {
       console.error('Error fetching all data:', error)
       ElMessage.error('Error al descargar los datos')
     } else {
-      const csv = Papa.unparse(data)
+      const csv = Papa.unparse(data)  // Generar CSV usando PapaParse
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
       const link = document.createElement('a')
       link.href = URL.createObjectURL(blob)
-      const fileName = `ganadores_${dateRange.value[0]}_${dateRange.value[1]}.csv`
+      const fileName = dateRange.value && dateRange.value.length === 2
+        ? `ganadores_${dateRange.value[0]}_${dateRange.value[1]}.csv`
+        : 'todos_los_ganadores.csv'
       link.setAttribute('download', fileName)
       document.body.appendChild(link)
       link.click()
@@ -272,18 +228,8 @@ const downloadCSV = async () => {
 
 onMounted(() => {
   fetchWinners() // Cargar datos iniciales
-  subscribeToRealtime() // Iniciar suscripción a cambios en tiempo real
-})
-
-// Limpiar suscripción al desmontar el componente
-onUnmounted(() => {
-  if (subscription) {
-    subscription.unsubscribe()
-  }
 })
 </script>
-
-
 
 <style scoped>
 .logo {
@@ -321,25 +267,11 @@ onUnmounted(() => {
   justify-content: space-between;
 }
 
-/* Estilos para la tabla */
-:deep(.el-table) {
-  width: 100% !important;
-}
-
-:deep(.el-table__cell) {
-  padding: 8px !important;
-}
-
+/* Asegurarse de que el contenido de las celdas no se desborde */
 :deep(.el-table .cell) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* Ajuste para el contenido de las celdas */
-:deep(.el-table .cell) {
-  padding-left: 8px;
-  padding-right: 8px;
 }
 
 .no-data {

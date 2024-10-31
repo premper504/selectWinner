@@ -46,40 +46,19 @@
         style="width: 100%" 
         border
         :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
-        table-layout="auto"
       >
         <!-- Columna personalizada para el índice -->
-        <el-table-column 
-          label="#" 
-          width="50" 
-          fixed="left"
-          align="center"
-        >
+        <el-table-column label="#" width="50" fixed="left">
           <template #default="scope">
             {{ (page - 1) * pageSize + scope.$index + 1 }}
           </template>
         </el-table-column>
 
-        <!-- Columna del nombre con el máximo espacio disponible -->
-        <el-table-column 
-          prop="ganadorName" 
-          label="Nombre" 
-          min-width="50%"
-          fixed="left"
-        />
+   
 
-        <!-- Columnas con ancho proporcional -->
-        <el-table-column 
-          prop="ganadorDepartamento" 
-          label="Departamento" 
-          min-width="25%"
-        />
-        
-        <el-table-column 
-          prop="ganadorTelefono" 
-          label="Teléfono" 
-          min-width="25%"
-        />
+        <el-table-column prop="ganadorName" label="Nombre" width="320" fixed="left"/>
+        <el-table-column prop="ganadorDepartamento" label="Departamento" width="200" />
+        <el-table-column prop="ganadorTelefono" label="Teléfono" width="150" />
 
       </el-table>
 
@@ -99,7 +78,7 @@
 
       <!-- Mostrar mensaje cuando no hay datos -->
       <div v-if="winners.length === 0 && !isLoading" class="no-data">
-        No se encontraron ganadores en las fechas seleccionadas
+        No hay datos disponibles.
       </div>
     </div>
   </div>
@@ -283,8 +262,6 @@ onUnmounted(() => {
 })
 </script>
 
-
-
 <style scoped>
 .logo {
   width: 200px;
@@ -321,25 +298,10 @@ onUnmounted(() => {
   justify-content: space-between;
 }
 
-/* Estilos para la tabla */
-:deep(.el-table) {
-  width: 100% !important;
-}
-
-:deep(.el-table__cell) {
-  padding: 8px !important;
-}
-
 :deep(.el-table .cell) {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* Ajuste para el contenido de las celdas */
-:deep(.el-table .cell) {
-  padding-left: 8px;
-  padding-right: 8px;
 }
 
 .no-data {

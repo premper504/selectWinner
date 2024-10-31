@@ -99,7 +99,7 @@
 
       <!-- Mostrar mensaje cuando no hay datos -->
       <div v-if="winners.length === 0 && !isLoading" class="no-data">
-        No se encontraron ganadores en las fechas seleccionadas
+        No hay datos disponibles.
       </div>
     </div>
   </div>
@@ -284,7 +284,6 @@ onUnmounted(() => {
 </script>
 
 
-
 <style scoped>
 .logo {
   width: 200px;
@@ -340,6 +339,67 @@ onUnmounted(() => {
 :deep(.el-table .cell) {
   padding-left: 8px;
   padding-right: 8px;
+}
+
+.no-data {
+  text-align: center;
+  padding: 20px;
+  font-size: 16px;
+  color: #909399;
+}
+
+@media (max-width: 768px) {
+  .header-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .date-filter, .header-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+</style>
+.logo {
+  width: 200px;
+}
+
+.container {
+  background-color: white;
+  padding: 15px;
+  width: 100%;
+  min-height: 150px;
+}
+
+.maxwidth {
+  max-width: 1100px;
+  margin: auto;
+}
+
+.header-container {
+  display: flex;
+  padding-bottom: 20px;
+}
+
+.date-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+:deep(.el-table .cell) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .no-data {
