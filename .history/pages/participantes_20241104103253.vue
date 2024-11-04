@@ -59,7 +59,7 @@
           <el-table-column prop="name" label="Nombre" width="300" />
           <el-table-column prop="dni" label="Identidad" width="200" />
           <el-table-column prop="phone" label="Teléfono" width="150" />
-          <el-table-column prop="email" label="Email" width="300" />
+          <el-table-column prop="email" label="Email" width="200" />
           <el-table-column prop="state" label="Departamento" width="150" />
           <el-table-column prop="place" label="Lugar de Compra" width="200" />
           <el-table-column prop="reciepCode" label="Código" width="150" />

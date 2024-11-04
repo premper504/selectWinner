@@ -56,14 +56,14 @@
           
           <!-- Columna para la fecha con slot para formatear -->
        
-          <el-table-column prop="name" label="Nombre" width="300" />
+          <el-table-column prop="nombre" label="Nombre" width="200" />
           <el-table-column prop="dni" label="Identidad" width="200" />
-          <el-table-column prop="phone" label="Teléfono" width="150" />
-          <el-table-column prop="email" label="Email" width="300" />
-          <el-table-column prop="state" label="Departamento" width="150" />
-          <el-table-column prop="place" label="Lugar de Compra" width="200" />
-          <el-table-column prop="reciepCode" label="Código" width="150" />
-          <el-table-column prop="product" label="Producto" width="200" />
+          <el-table-column prop="ganadorUser.phone" label="Teléfono" width="150" />
+          <el-table-column prop="ganadorUser.email" label="Email" width="200" />
+          <el-table-column prop="ganadorUser.state" label="Departamento" width="150" />
+          <el-table-column prop="ganadorUser.place" label="Lugar de Compra" width="200" />
+          <el-table-column prop="ganadorUser.reciepCode" label="Código" width="150" />
+          <el-table-column prop="ganadorUser.product" label="Producto" width="200" />
         </el-table>
   
         <!-- Paginación -->
@@ -125,7 +125,7 @@
     try {
       let query = $supabase
         .from(PARTICIPANTS_TABLE)
-        .select(`*`, { count: 'exact' })
+        .select(`*, user`, { count: 'exact' })
         .order('created_at', { ascending: false })
   
       // Aplicar filtro de fecha si está establecido
