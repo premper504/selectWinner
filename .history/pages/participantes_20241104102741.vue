@@ -92,7 +92,7 @@
   import Papa from 'papaparse'  // Para generar el CSV
   
   // Definir el nombre de la tabla como una constante
-  const PARTICIPANTS_TABLE = 'ceteco_genio'
+  const PARTICIPANTS_TABLE = 'david.vela@casaferne.com'
   
   // Función para formatear la fecha y hora
   const formatDate = (dateString) => {
