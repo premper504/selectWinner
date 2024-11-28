@@ -592,7 +592,6 @@ onMounted(() => {
 
 .el-overlay-dialog{
 
-  z-index: 200!important;
 }
 
 @media screen and (max-width: 768px) {

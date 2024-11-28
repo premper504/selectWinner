@@ -590,10 +590,7 @@ onMounted(() => {
   transition: opacity 0.3s ease;
 }
 
-.el-overlay-dialog{
-
-  z-index: 200!important;
-}
+..el-overlay-dialog
 
 @media screen and (max-width: 768px) {
   .ganadorB {
