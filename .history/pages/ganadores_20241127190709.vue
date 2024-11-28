@@ -60,7 +60,7 @@
           </template>
         </el-table-column>
 
-        <!-- Columna del nombre -->
+        <!-- Columna del nombre con el máximo espacio disponible -->
         <el-table-column 
           prop="ganadorName" 
           label="Nombre" 
@@ -68,26 +68,25 @@
           fixed="left"
         />
 
-        <!-- Columna del departamento -->
+        <!-- Columnas con ancho proporcional -->
         <el-table-column 
           prop="ganadorDepartamento" 
           label="Departamento" 
           min-width="25%"
         />
-
-        <!-- Columna del teléfono -->
+        
         <el-table-column 
           prop="ganadorTelefono" 
           label="Teléfono" 
           min-width="25%"
         />
 
-        <!-- Columna del premio -->
         <el-table-column 
           prop="premio" 
-          label="Premio" 
+          label="Teléfono" 
           min-width="25%"
         />
+
       </el-table>
 
       <!-- Paginación -->
@@ -120,6 +119,19 @@ import Papa from 'papaparse'
 
 const WINNERS_TABLE = 'ganadoresCeteco'
 
+// Función para formatear la fecha y hora
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  const day = date.getDate().toString().padStart(2, '0')
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const year = date.getFullYear().toString().slice(-2)
+  const hours = date.getHours().toString().padStart(2, '0')
+  const minutes = date.getMinutes().toString().padStart(2, '0')
+  
+  return `${day}/${month}/${year} ${hours}:${minutes}`
+}
+
 // Función para obtener la fecha de hoy en formato YYYY-MM-DD
 const getTodayDate = () => {
   const today = new Date()
@@ -140,6 +152,7 @@ let subscription = null
 
 // Función para suscribirse a cambios en tiempo real
 const subscribeToRealtime = () => {
+  // Cancelar suscripción existente si hay una
   if (subscription) {
     subscription.unsubscribe()
   }
@@ -149,13 +162,15 @@ const subscribeToRealtime = () => {
     .on(
       'postgres_changes',
       {
-        event: '*',
+        event: '*', // Escuchar inserts, updates y deletes
         schema: 'public',
         table: WINNERS_TABLE
       },
       (payload) => {
         console.log('Realtime change received:', payload)
+        // Recargar datos cuando hay cambios
         fetchWinners(page.value)
+        // Mostrar notificación
         if (payload.eventType === 'INSERT') {
           ElMessage.success('¡Nuevo ganador registrado!')
         }
@@ -173,6 +188,7 @@ const fetchWinners = async (page = 1) => {
       .select(`*`, { count: 'exact' })
       .order('created_at', { ascending: false })
 
+    // Aplicar filtro de fecha
     if (dateRange.value && dateRange.value.length === 2) {
       query = query
         .gte('created_at', `${dateRange.value[0]}T00:00:00`)
@@ -203,7 +219,7 @@ const handleDateChange = () => {
   fetchWinners()
 }
 
-// Función para limpiar el filtro de fecha
+// Función para limpiar el filtro de fecha y mostrar solo los de hoy
 const clearDateFilter = () => {
   dateRange.value = [getTodayDate(), getTodayDate()]
   page.value = 1
@@ -261,10 +277,11 @@ const downloadCSV = async () => {
 }
 
 onMounted(() => {
-  fetchWinners()
-  subscribeToRealtime()
+  fetchWinners() // Cargar datos iniciales
+  subscribeToRealtime() // Iniciar suscripción a cambios en tiempo real
 })
 
+// Limpiar suscripción al desmontar el componente
 onUnmounted(() => {
   if (subscription) {
     subscription.unsubscribe()
@@ -272,8 +289,9 @@ onUnmounted(() => {
 })
 </script>
 
+
+
 <style scoped>
-/* Estilos generales */
 .logo {
   width: 200px;
 }
@@ -309,6 +327,27 @@ onUnmounted(() => {
   justify-content: space-between;
 }
 
+/* Estilos para la tabla */
+:deep(.el-table) {
+  width: 100% !important;
+}
+
+:deep(.el-table__cell) {
+  padding: 8px !important;
+}
+
+:deep(.el-table .cell) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Ajuste para el contenido de las celdas */
+:deep(.el-table .cell) {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
 .no-data {
   text-align: center;
   padding: 20px;
@@ -323,8 +362,7 @@ onUnmounted(() => {
     gap: 10px;
   }
 
-  .date-filter,
-  .header-right {
+  .date-filter, .header-right {
     width: 100%;
     justify-content: space-between;
   }

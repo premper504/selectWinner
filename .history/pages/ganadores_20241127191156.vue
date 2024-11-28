@@ -46,27 +46,48 @@
         style="width: 100%" 
         border
         :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
-        >
+        table-layout="auto"
+      >
         <!-- Columna personalizada para el índice -->
-        <el-table-column label="#" width="50" fixed="left">
+        <el-table-column 
+          label="#" 
+          width="50" 
+          fixed="left"
+          align="center"
+        >
           <template #default="scope">
             {{ (page - 1) * pageSize + scope.$index + 1 }}
           </template>
         </el-table-column>
 
-        <el-table-column prop="id" label="ID" width="150" />
-        
-        <!-- Columna para la fecha con slot para formatear -->
-        <el-table-column label="Fecha de sorteo" width="200">
-          <template #default="scope">
-            {{ formatDate(scope.row.created_at) }}
-          </template>
-        </el-table-column>
+        <!-- Columna del nombre -->
+        <el-table-column 
+          prop="ganadorName" 
+          label="Nombre" 
+          min-width="50%"
+          fixed="left"
+        />
 
-        <el-table-column prop="ganadorName" label="Nombre" width="320" fixed="left"/>
-        <el-table-column prop="ganadorDepartamento" label="Departamento" width="200" />
-        <el-table-column prop="ganadorTelefono" label="Teléfono" width="150" />
+        <!-- Columna del departamento -->
+        <el-table-column 
+          prop="ganadorDepartamento" 
+          label="Departamento" 
+          min-width="25%"
+        />
 
+        <!-- Columna del teléfono -->
+        <el-table-column 
+          prop="ganadorTelefono" 
+          label="Teléfono" 
+          min-width="25%"
+        />
+
+        <!-- Columna del premio -->
+        <el-table-column 
+          prop="premio" 
+          label="Premio" 
+          min-width="25%"
+        />
       </el-table>
 
       <!-- Paginación -->
@@ -85,32 +106,24 @@
 
       <!-- Mostrar mensaje cuando no hay datos -->
       <div v-if="winners.length === 0 && !isLoading" class="no-data">
-        No hay datos disponibles.
+        No se encontraron ganadores en las fechas seleccionadas
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useNuxtApp } from '#app'
 import { ElMessage, ElLoading } from 'element-plus'
-import Papa from 'papaparse'  // Para generar el CSV
+import Papa from 'papaparse'
 
-// Definir el nombre de la tabla como una constante
 const WINNERS_TABLE = 'ganadoresCeteco'
 
-// Función para formatear la fecha y hora
-const formatDate = (dateString) => {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  const day = date.getDate().toString().padStart(2, '0')
-  const month = (date.getMonth() + 1).toString().padStart(2, '0')
-  const year = date.getFullYear().toString().slice(-2)
-  const hours = date.getHours().toString().padStart(2, '0')
-  const minutes = date.getMinutes().toString().padStart(2, '0')
-  
-  return `${day}/${month}/${year} ${hours}:${minutes}`
+// Función para obtener la fecha de hoy en formato YYYY-MM-DD
+const getTodayDate = () => {
+  const today = new Date()
+  return today.toISOString().split('T')[0]
 }
 
 const { $supabase } = useNuxtApp()
@@ -120,7 +133,36 @@ const pageSize = ref(50)
 const totalRecords = ref(0)
 const isLoading = ref(true)
 const isDownloading = ref(false)
-const dateRange = ref([])
+const dateRange = ref([getTodayDate(), getTodayDate()])
+
+// Variable para almacenar la suscripción
+let subscription = null
+
+// Función para suscribirse a cambios en tiempo real
+const subscribeToRealtime = () => {
+  if (subscription) {
+    subscription.unsubscribe()
+  }
+
+  subscription = $supabase
+    .channel('winners-changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: WINNERS_TABLE
+      },
+      (payload) => {
+        console.log('Realtime change received:', payload)
+        fetchWinners(page.value)
+        if (payload.eventType === 'INSERT') {
+          ElMessage.success('¡Nuevo ganador registrado!')
+        }
+      }
+    )
+    .subscribe()
+}
 
 // Función para obtener los datos con paginación y filtro de fecha
 const fetchWinners = async (page = 1) => {
@@ -131,10 +173,9 @@ const fetchWinners = async (page = 1) => {
       .select(`*`, { count: 'exact' })
       .order('created_at', { ascending: false })
 
-    // Aplicar filtro de fecha si está establecido
     if (dateRange.value && dateRange.value.length === 2) {
       query = query
-        .gte('created_at', dateRange.value[0])
+        .gte('created_at', `${dateRange.value[0]}T00:00:00`)
         .lte('created_at', `${dateRange.value[1]}T23:59:59`)
     }
 
@@ -146,7 +187,7 @@ const fetchWinners = async (page = 1) => {
       ElMessage.error('Error al obtener los datos')
     } else {
       winners.value = data
-      totalRecords.value = count  // Número total de registros
+      totalRecords.value = count
     }
   } catch (err) {
     console.error('Error in fetchWinners:', err)
@@ -158,31 +199,28 @@ const fetchWinners = async (page = 1) => {
 
 // Función para manejar el cambio de fecha
 const handleDateChange = () => {
-  page.value = 1  // Resetear a la primera página
+  page.value = 1
   fetchWinners()
 }
 
 // Función para limpiar el filtro de fecha
 const clearDateFilter = () => {
-  dateRange.value = []
-  page.value = 1  // Resetear a la primera página
+  dateRange.value = [getTodayDate(), getTodayDate()]
+  page.value = 1
   fetchWinners()
 }
 
-// Función para manejar el cambio de página
 const handlePageChange = (newPage) => {
   page.value = newPage
   fetchWinners(newPage)
 }
 
-// Función para manejar el cambio de tamaño de página
 const handleSizeChange = (newSize) => {
   pageSize.value = newSize
-  page.value = 1  // Resetear a la primera página
+  page.value = 1
   fetchWinners()
 }
 
-// Función para descargar CSV
 const downloadCSV = async () => {
   isDownloading.value = true
   try {
@@ -191,10 +229,9 @@ const downloadCSV = async () => {
       .select(`*`)
       .order('created_at', { ascending: false })
 
-    // Aplicar filtro de fecha si está establecido
     if (dateRange.value && dateRange.value.length === 2) {
       query = query
-        .gte('created_at', dateRange.value[0])
+        .gte('created_at', `${dateRange.value[0]}T00:00:00`)
         .lte('created_at', `${dateRange.value[1]}T23:59:59`)
     }
 
@@ -204,13 +241,11 @@ const downloadCSV = async () => {
       console.error('Error fetching all data:', error)
       ElMessage.error('Error al descargar los datos')
     } else {
-      const csv = Papa.unparse(data)  // Generar CSV usando PapaParse
+      const csv = Papa.unparse(data)
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
       const link = document.createElement('a')
       link.href = URL.createObjectURL(blob)
-      const fileName = dateRange.value && dateRange.value.length === 2
-        ? `ganadores_${dateRange.value[0]}_${dateRange.value[1]}.csv`
-        : 'todos_los_ganadores.csv'
+      const fileName = `ganadores_${dateRange.value[0]}_${dateRange.value[1]}.csv`
       link.setAttribute('download', fileName)
       document.body.appendChild(link)
       link.click()
@@ -226,11 +261,19 @@ const downloadCSV = async () => {
 }
 
 onMounted(() => {
-  fetchWinners() // Cargar datos iniciales
+  fetchWinners()
+  subscribeToRealtime()
+})
+
+onUnmounted(() => {
+  if (subscription) {
+    subscription.unsubscribe()
+  }
 })
 </script>
 
 <style scoped>
+/* Estilos generales */
 .logo {
   width: 200px;
 }
@@ -266,13 +309,6 @@ onMounted(() => {
   justify-content: space-between;
 }
 
-/* Asegurarse de que el contenido de las celdas no se desborde */
-:deep(.el-table .cell) {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .no-data {
   text-align: center;
   padding: 20px;
@@ -287,7 +323,8 @@ onMounted(() => {
     gap: 10px;
   }
 
-  .date-filter, .header-right {
+  .date-filter,
+  .header-right {
     width: 100%;
     justify-content: space-between;
   }
