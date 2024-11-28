@@ -1,6 +1,12 @@
 .main-body {
   background-color: #ffd200;
   padding: 0px;
+  min-height: 100vh;
+  background-image: url('/assets/images/image_3.png');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 body{
@@ -10,9 +16,22 @@ body{
   font-family: Tahoma, Geneva, sans-serif;
 }
 
+.upload-placeholder{
+padding: 20px!important;
+}
+
+..el-overlay-dialog{
+  
+}
+
+
+
+.el-upload--picture-card{
+  width: 100%!important;
+}
 
 .el-form-item__label{
-
+  justify-content: flex-start!important;
 }
 
 
@@ -21,13 +40,11 @@ body{
 }
 
 .header-section {
-  background-image: url('/assets/images/image_3.png');
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+
   width: 100%;
+  min-height: 100vh;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 }
@@ -40,7 +57,7 @@ body{
 }
 
 .header-image {
-  width: 100%;
+  width: 300px;
 }
 
 .awards-image {

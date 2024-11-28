@@ -63,7 +63,7 @@
           </p>
         </div>
         <div ref="congratsText" class="congrats-text" v-show="showCongrats">
-        ¡ FELICIDADES !
+        ¡FELICIDADES !
       </div>
 
         <template #footer>

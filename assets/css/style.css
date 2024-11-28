@@ -20,6 +20,10 @@ body{
 padding: 20px!important;
 }
 
+.el-overlay-dialog{
+  z-index: 2000!important;
+}
+
 
 
 .el-upload--picture-card{
