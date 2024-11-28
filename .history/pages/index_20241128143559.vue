@@ -167,40 +167,7 @@ const resetAndSelectNewWinner = async () => {
 
 
 // Función para animar los premios
-const startPrizeAnimation = () => {
-  if (prizeInterval) {
-    clearInterval(prizeInterval);
-  }
 
-  let lastIndex = -1;  // Para asegurar que siempre cambiamos la imagen
-  
-  prizeInterval = setInterval(() => {
-    // Asegurar que cambiamos a un índice diferente
-    let nextIndex;
-    do {
-      nextIndex = Math.floor(Math.random() * prizes.value.length);
-    } while (nextIndex === lastIndex);
-    
-    lastIndex = nextIndex;
-    currentPrizeIndex.value = nextIndex;
-    
-    // Crear una nueva imagen y esperar a que cargue
-    const newImage = new Image();
-    newImage.onload = () => {
-      // Una vez cargada, actualizar la URL
-      currentPrize.value = prizes.value[currentPrizeIndex.value];
-      
-      // Forzar repaint
-      const prizeImage = document.querySelector('.prize-image');
-      if (prizeImage) {
-        prizeImage.style.display = 'none';
-        prizeImage.offsetHeight; // Forzar reflow
-        prizeImage.style.display = '';
-      }
-    };
-    newImage.src = prizes.value[currentPrizeIndex.value];
-  }, 200); // Ajustado a 200ms para una animación más suave
-};
 
 
 // Detener animación de premios
