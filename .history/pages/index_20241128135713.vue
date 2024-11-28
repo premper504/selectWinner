@@ -63,7 +63,7 @@
           </p>
         </div>
         <div ref="congratsText" class="congrats-text" v-show="showCongrats">
-        ¡FELICIDADES!
+        ¡ FELICIDADES !
       </div>
 
         <template #footer>
@@ -97,6 +97,7 @@ let confettiFrame = null;
 
 
 
+
 const { $supabase } = useNuxtApp();
 const PARTICIPANTS_TABLE = "participantes_genio";
 
@@ -110,16 +111,30 @@ const selectedWinner = ref(null); // Ganador seleccionado
 const selectedPrize = ref(null)
 const preloadedPrizes = ref(new Map());
 const showCongrats = ref(false);
-
-const baseUrl = 'https://sorteo.up.railway.app';
+const isAnimating = ref(false);
 
 const prizes = ref([
-`${baseUrl}/assets/images/band.png`,
-  `${baseUrl}/assets/images/dinero.png`,
-  `${baseUrl}/assets/images/moto.png`,
-  `${baseUrl}/assets/images/movil.png`,
-  `${baseUrl}/assets/images/nintendo.png`,
+  "/assets/images/band.png",
+  "/assets/images/dinero.png",
+  "/assets/images/moto.png",
+  "/assets/images/movil.png",
+  "/assets/images/nintendo.png",
 ]);
+
+
+const preloadPrizeImages = () => {
+  return Promise.all(
+    prizes.value.map((src) => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = src;
+      });
+    })
+  );
+};
+
 const currentPrizeIndex = ref(0); // Índice del premio actual
 const currentPrize = ref(prizes.value[currentPrizeIndex.value]); // Premio actual
 const isSpinning = ref(false);
@@ -166,12 +181,34 @@ const resetAndSelectNewWinner = async () => {
 
 // Función para animar los premios
 const startPrizeAnimation = () => {
-  prizeInterval = setInterval(() => {
-    currentPrizeIndex.value =
-      (currentPrizeIndex.value + 1) % prizes.value.length;
+  if (isAnimating.value) return;
+  
+  isAnimating.value = true;
+  currentPrizeIndex.value = 0;
+  
+  const animate = () => {
+    if (!isAnimating.value) return;
+    
+    currentPrizeIndex.value = (currentPrizeIndex.value + 1) % prizes.value.length;
     currentPrize.value = prizes.value[currentPrizeIndex.value];
-  }, 100); // Cambiar imagen cada 500 ms
+    
+    // Forzar actualización del DOM
+    requestAnimationFrame(() => {
+      const prizeImage = document.querySelector('.prize-image');
+      if (prizeImage) {
+        prizeImage.style.opacity = '0';
+        setTimeout(() => {
+          prizeImage.src = currentPrize.value;
+          prizeImage.style.opacity = '1';
+        }, 50);
+      }
+    });
+  };
+
+  prizeInterval = setInterval(animate, 200);
 };
+
+
 
 // Detener animación de premios
 const stopPrizeAnimation = () => {
@@ -247,6 +284,8 @@ const spinSlotMachine = async () => {
     selectedWinner.value = winner
     console.log('Ganador seleccionado:', winner)
 
+    await preloadPrizeImages();
+
     // Mostrar el diálogo y comenzar animación de premios
     showWinnerDialog.value = true
     console.log('Mostrando diálogo de ganador')
@@ -266,7 +305,6 @@ const spinSlotMachine = async () => {
 
     // Después de un tiempo y con la imagen ya precargada, mostrar el premio final
     setTimeout(async () => {
-      console.log('Mostrando premio final')
       stopPrizeAnimation()
 
       if (finalPrize) {

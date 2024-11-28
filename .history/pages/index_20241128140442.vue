@@ -111,14 +111,12 @@ const selectedPrize = ref(null)
 const preloadedPrizes = ref(new Map());
 const showCongrats = ref(false);
 
-const baseUrl = 'https://sorteo.up.railway.app';
-
 const prizes = ref([
-`${baseUrl}/assets/images/band.png`,
-  `${baseUrl}/assets/images/dinero.png`,
-  `${baseUrl}/assets/images/moto.png`,
-  `${baseUrl}/assets/images/movil.png`,
-  `${baseUrl}/assets/images/nintendo.png`,
+  "/assets/images/band.png",
+  "/assets/images/dinero.png",
+  "/assets/images/moto.png",
+  "/assets/images/movil.png",
+  "/assets/images/nintendo.png",
 ]);
 const currentPrizeIndex = ref(0); // Índice del premio actual
 const currentPrize = ref(prizes.value[currentPrizeIndex.value]); // Premio actual

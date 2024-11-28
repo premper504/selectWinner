@@ -63,7 +63,7 @@
           </p>
         </div>
         <div ref="congratsText" class="congrats-text" v-show="showCongrats">
-        ¡FELICIDADES!
+        ¡ FELICIDADES !
       </div>
 
         <template #footer>
@@ -97,6 +97,7 @@ let confettiFrame = null;
 
 
 
+
 const { $supabase } = useNuxtApp();
 const PARTICIPANTS_TABLE = "participantes_genio";
 
@@ -110,16 +111,29 @@ const selectedWinner = ref(null); // Ganador seleccionado
 const selectedPrize = ref(null)
 const preloadedPrizes = ref(new Map());
 const showCongrats = ref(false);
-
-const baseUrl = 'https://sorteo.up.railway.app';
-
+const isAnimating = ref(false);
 const prizes = ref([
-`${baseUrl}/assets/images/band.png`,
-  `${baseUrl}/assets/images/dinero.png`,
-  `${baseUrl}/assets/images/moto.png`,
-  `${baseUrl}/assets/images/movil.png`,
-  `${baseUrl}/assets/images/nintendo.png`,
+  "/assets/images/band.png",
+  "/assets/images/dinero.png",
+  "/assets/images/moto.png",
+  "/assets/images/movil.png",
+  "/assets/images/nintendo.png",
 ]);
+
+
+const preloadPrizeImages = () => {
+  return Promise.all(
+    prizes.value.map((src) => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = resolve;
+        img.onerror = reject;
+        img.src = src;
+      });
+    })
+  );
+};
+
 const currentPrizeIndex = ref(0); // Índice del premio actual
 const currentPrize = ref(prizes.value[currentPrizeIndex.value]); // Premio actual
 const isSpinning = ref(false);

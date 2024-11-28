@@ -111,8 +111,6 @@ const selectedPrize = ref(null)
 const preloadedPrizes = ref(new Map());
 const showCongrats = ref(false);
 
-const baseUrl = 'https://sorteo.up.railway.app';
-
 const prizes = ref([
 `${baseUrl}/assets/images/band.png`,
   `${baseUrl}/assets/images/dinero.png`,
