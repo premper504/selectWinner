@@ -138,28 +138,30 @@ const startSelection = () => {
 
 
 const resetAndSelectNewWinner = async () => {
-  // Detener el confeti
+
   stopConfetti();
+
+
   
   // Ocultar elementos actuales
-  showCongrats.value = false;
-  showWinnerDialog.value = false;
-  showResult.value = false;
+  showCongrats.value = false
+  showWinnerDialog.value = false
+  showResult.value = false
   
   // Resetear variables
-  selectedWinner.value = null;
-  selectedPrize.value = null;
-  currentPrize.value = prizes.value[0];
+  selectedWinner.value = null
+  selectedPrize.value = null
+  currentPrize.value = prizes.value[0]
   
   // Recargar los participantes
-  await getGenioData();
+  await getGenioData()
   
   // Pequeña pausa para asegurar que todo se ha reseteado
   setTimeout(() => {
     // Iniciar nueva selección
-    startSelection();
-  }, 100);
-};
+    startSelection()
+  }, 100)
+}
 
 
 // Función para animar los premios
@@ -207,14 +209,12 @@ const getRandomPrize = async () => {
 
 
 const stopConfetti = () => {
-  // Cancelar el frame de animación
-  if (confettiFrame) {
-    cancelAnimationFrame(confettiFrame);
-    confettiFrame = null;
+  if (typeof confetti !== 'undefined' && confetti.reset) {
+    confetti.reset();
   }
-  
-  confetti.reset();
 };
+
+
 
 
 const spinSlotMachine = async () => {
@@ -565,7 +565,6 @@ onMounted(() => {
   font-size: 22px;
   color: #333;
   margin: 15px 0;
-  font-weight: 400;
 }
 
 .prize-announcement {

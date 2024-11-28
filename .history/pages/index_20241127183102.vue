@@ -42,7 +42,9 @@
       </div>
 
       <!-- Texto de Felicitaciones -->
-   
+      <div ref="congratsText" class="congrats-text" v-show="showCongrats">
+        ¡FELICIDADES!
+      </div>
 
       <!-- Diálogo con el ganador -->
       <el-dialog v-model="showWinnerDialog" title="¡Tenemos Ganador/a!" width="70%">
@@ -62,27 +64,21 @@
             ¡Has ganado: <strong> {{ selectedPrize.name }}!</strong> 
           </p>
         </div>
-        <div ref="congratsText" class="congrats-text" v-show="showCongrats">
-        ¡FELICIDADES!
-      </div>
 
         <template #footer>
+          <el-button @click="closeDialog" type="primary">Cerrar</el-button>
+        </template>
+      </el-dialog>
 
-
-          <el-button
+      <!-- Botón para nuevo ganador -->
+      <div class="newGanador">
+        <el-button
           v-show="showCongrats"
           @click="resetAndSelectNewWinner"
           class="newGanadorB"
         >
           Nuevo Ganador
         </el-button>
-
-        </template>
-      </el-dialog>
-
-      <!-- Botón para nuevo ganador -->
-      <div class="newGanador">
-      
       </div>
     </section>
   </div>
@@ -91,11 +87,8 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useNuxtApp } from "#app";
+import confetti from 'canvas-confetti'
 import gsap from "gsap";
-import confetti from 'canvas-confetti';
-let confettiFrame = null;
-
-
 
 const { $supabase } = useNuxtApp();
 const PARTICIPANTS_TABLE = "participantes_genio";
@@ -108,8 +101,6 @@ const showResult = ref(false);
 const showWinnerDialog = ref(false); // Control del diálogo del ganador
 const selectedWinner = ref(null); // Ganador seleccionado
 const selectedPrize = ref(null)
-const preloadedPrizes = ref(new Map());
-const showCongrats = ref(false);
 
 const prizes = ref([
   "/assets/images/band.png",
@@ -138,28 +129,25 @@ const startSelection = () => {
 
 
 const resetAndSelectNewWinner = async () => {
-  // Detener el confeti
-  stopConfetti();
-  
   // Ocultar elementos actuales
-  showCongrats.value = false;
-  showWinnerDialog.value = false;
-  showResult.value = false;
+  showCongrats.value = false
+  showWinnerDialog.value = false
+  showResult.value = false
   
   // Resetear variables
-  selectedWinner.value = null;
-  selectedPrize.value = null;
-  currentPrize.value = prizes.value[0];
+  selectedWinner.value = null
+  selectedPrize.value = null
+  currentPrize.value = prizes.value[0]
   
   // Recargar los participantes
-  await getGenioData();
+  await getGenioData()
   
   // Pequeña pausa para asegurar que todo se ha reseteado
   setTimeout(() => {
     // Iniciar nueva selección
-    startSelection();
-  }, 100);
-};
+    startSelection()
+  }, 100)
+}
 
 
 // Función para animar los premios
@@ -206,17 +194,7 @@ const getRandomPrize = async () => {
 }
 
 
-const stopConfetti = () => {
-  // Cancelar el frame de animación
-  if (confettiFrame) {
-    cancelAnimationFrame(confettiFrame);
-    confettiFrame = null;
-  }
-  
-  confetti.reset();
-};
-
-
+// Función principal que controla el "slot machine"
 const spinSlotMachine = async () => {
   isSpinning.value = true
   try {
@@ -227,12 +205,14 @@ const spinSlotMachine = async () => {
 
     const totalDistance = participants.value.length * itemHeight
 
+    // Animación inicial del scroll de nombres
     await gsap.to(namesContainer.value, {
       y: -totalDistance,
       duration: duration,
       ease: "power2.inOut"
     })
 
+    // Resetear la posición y mostrar el ganador
     gsap.set(namesContainer.value, { y: 0 })
     await gsap.to(namesContainer.value, {
       y: -(winnerIndex * itemHeight),
@@ -250,37 +230,34 @@ const spinSlotMachine = async () => {
     console.log('Mostrando diálogo de ganador')
     startPrizeAnimation()
 
-    // Obtener y precargar el premio final mientras se muestra la animación
-    const finalPrize = await getRandomPrize()
-    
-    // Precargar la imagen del premio seleccionado
-    if (finalPrize) {
-      await new Promise((resolve) => {
-        const img = new Image()
-        img.onload = resolve
-        img.src = finalPrize.image
-      })
-    }
-
-    // Después de un tiempo y con la imagen ya precargada, mostrar el premio final
+    // Después de un tiempo, seleccionar el premio final
     setTimeout(async () => {
-      console.log('Mostrando premio final')
+      console.log('Seleccionando premio final')
       stopPrizeAnimation()
+      const finalPrize = await getRandomPrize()
+      console.log('Premio obtenido de Supabase:', finalPrize)
 
       if (finalPrize) {
         selectedPrize.value = finalPrize
+        // Usar el campo 'image' en lugar de 'image_url'
         currentPrize.value = finalPrize.image
         console.log('Premio seleccionado:', finalPrize)
 
         try {
-          // Resto del código...
+          // Primero crear la entrada del ganador
+          console.log('Creando entrada de ganador...')
           await createWinnerEntry(winner, finalPrize)
+          console.log('Entrada de ganador creada exitosamente')
+
+          // Luego marcar el ganador y el premio
           await markWinner(winner.id)
           await markPrizeAsInactive(finalPrize.id)
 
+          // Mostrar confeti y felicitaciones
           showCongrats.value = true
           showContinuousConfetti()
 
+          // Animar el nombre del ganador
           await gsap.to(namesContainer.value.children[winnerIndex], {
             scale: 1.5,
             duration: 0.3,
@@ -384,54 +361,49 @@ const getGenioData = async () => {
 };
 
 
-
 const showContinuousConfetti = () => {
-  // Asegurarse de que confetti está disponible
-  if (typeof confetti === 'undefined') {
-    console.error('Confetti no está disponible');
-    return;
-  }
-
   const end = Date.now() + (15 * 1000);
-  const colors = ['#ff0000', '#ffffff', '#ff69b4'];
 
-  const frame = () => {
+  // Lanzar desde el centro
+  const centerConfetti = () => {
     confetti({
-      particleCount: 3,
-      angle: 60,
-      spread: 55,
-      origin: { x: 0, y: 0.3 },
-      colors: colors,
-      zIndex: 3000
+      particleCount: 100,
+      spread: 100,
+      origin: { y: 0.6 }
     });
-    
-    confetti({
-      particleCount: 3,
-      angle: 120,
-      spread: 55,
-      origin: { x: 1, y: 0.3 },
-      colors: colors,
-      zIndex: 3000
-    });
-
-    if (Date.now() < end) {
-      confettiFrame = requestAnimationFrame(frame);
-    }
   };
 
-  // Explosión inicial
-  confetti({
-    particleCount: 150,
-    spread: 100,
-    origin: { y: 0.3 },
-    colors: colors,
-    zIndex: 3000,
-  });
+  // Lanzar desde los lados
+  const sideConfetti = () => {
+    confetti({
+      particleCount: 50,
+      angle: 60,
+      spread: 80,
+      origin: { x: 0, y: 0.6 }
+    });
 
-  frame();
-};
+    confetti({
+      particleCount: 50,
+      angle: 120,
+      spread: 80,
+      origin: { x: 1, y: 0.6 }
+    });
+  };
 
-
+  // Función para animar
+  (function frame() {
+    if (Date.now() < end) {
+      // Alternar entre centro y lados
+      if (Date.now() % 1000 < 500) {
+        centerConfetti();
+      } else {
+        sideConfetti();
+      }
+      
+      requestAnimationFrame(frame);
+    }
+  }());
+}
 
 onMounted(() => {
   getGenioData(); // Cargar los participantes inicialmente
@@ -565,7 +537,6 @@ onMounted(() => {
   font-size: 22px;
   color: #333;
   margin: 15px 0;
-  font-weight: 400;
 }
 
 .prize-announcement {

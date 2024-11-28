@@ -161,7 +161,6 @@ const resetAndSelectNewWinner = async () => {
   }, 100);
 };
 
-
 // Función para animar los premios
 const startPrizeAnimation = () => {
   prizeInterval = setInterval(() => {
@@ -565,7 +564,6 @@ onMounted(() => {
   font-size: 22px;
   color: #333;
   margin: 15px 0;
-  font-weight: 400;
 }
 
 .prize-announcement {

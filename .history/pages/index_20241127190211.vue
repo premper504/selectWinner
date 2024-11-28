@@ -565,7 +565,6 @@ onMounted(() => {
   font-size: 22px;
   color: #333;
   margin: 15px 0;
-  font-weight: 400;
 }
 
 .prize-announcement {
