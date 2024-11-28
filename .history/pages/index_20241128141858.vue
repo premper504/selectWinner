@@ -133,7 +133,6 @@ const shuffleNames = (arr) => {
 
 // Iniciar selección al hacer clic en el botón
 const startSelection = () => {
-  
   if (!isSpinning.value) {
     showResult.value = true;
     spinSlotMachine(); // Inicia el proceso de selección

@@ -2,7 +2,9 @@
   <div class="main-body">
     <section class="header-section" v-show="!showResult">
       <div class="header-container">
-       
+        <div class="prize-display">
+            <img :src="currentPrize" alt="Premio seleccionado" class="prize-image" />
+          </div>
         <img
           class="header-image"
           src="assets/images/logoCeteco.png"
@@ -133,7 +135,6 @@ const shuffleNames = (arr) => {
 
 // Iniciar selección al hacer clic en el botón
 const startSelection = () => {
-  
   if (!isSpinning.value) {
     showResult.value = true;
     spinSlotMachine(); // Inicia el proceso de selección
