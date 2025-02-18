@@ -2,19 +2,17 @@
   <div class="main-body">
     <section class="header-section" v-show="!showResult">
       <div class="header-container">
-       
         <img
           class="header-image"
-          src="assets/images/logoCeteco.png"
+          src="assets/images/tigrelogosula.png"
           alt="Cumple Deseo"
         />
         <div>
-          <img
-            class="ganadorB"
-            src="assets/images/ganador.png"
-            alt="Cumple Deseo"
-            @click="startSelection"
-          />
+
+          <Button  class="ganadorB"  @click="startSelection" >
+Seleccionar Ganador
+          </Button >
+        
         </div>
       </div>
     </section>
@@ -23,7 +21,7 @@
       <div class="containerResultado">
         <img
           class="header-genio"
-          src="assets/images/ceteco___cumpledeseo.png"
+          src="assets/images/tigrelogosula.png"
           alt="Cumple Deseo"
         />
 
@@ -42,89 +40,53 @@
         </div>
       </div>
 
-      <!-- Texto de Felicitaciones -->
-   
-
       <!-- Diálogo con el ganador -->
       <el-dialog v-model="showWinnerDialog" title="¡Tenemos Ganador/a!" width="70%">
         <div class="dialog-content">
-     
-            <div class="dialog-text" style="font-size: 40px; font-weight: 900;">  {{ selectedWinner?.name }} </div>
-       
-          <p class="dialog-text" v-if="!selectedPrize">
-            <strong>Seleccionando premio aleatorio...</strong>
-          </p>
-
-          <div class="prize-display">
-            <img :src="currentPrize" alt="Premio seleccionado" class="prize-image" />
+          <div class="dialog-text" style="font-size: 40px; font-weight: 900;">
+            {{ selectedWinner?.name }} {{ selectedWinner?.lastname }}
           </div>
-
-          <p v-if="selectedPrize" class="dialog-text prize-announcement">
-            ¡Has ganado: <strong> {{ selectedPrize.name }}!</strong> 
-          </p>
         </div>
         <div ref="congratsText" class="congrats-text" v-show="showCongrats">
-        ¡FELICIDADES!
-      </div>
+          ¡FELICIDADES!
+        </div>
 
         <template #footer>
-
-
           <el-button
-          v-show="showCongrats"
-          @click="resetAndSelectNewWinner"
-          class="newGanadorB"
-        >
-          Nuevo Ganador
-        </el-button>
-
+            v-show="showCongrats"
+            @click="resetAndSelectNewWinner"
+            class="newGanadorB"
+          >
+            Nuevo Ganador
+          </el-button>
         </template>
       </el-dialog>
 
-      <!-- Botón para nuevo ganador -->
-      <div class="newGanador">
-      
-      </div>
+      <!-- Botón para nuevo ganador (opcional) -->
+      <div class="newGanador"></div>
     </section>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick } from "vue";
 import { useNuxtApp } from "#app";
 import gsap from "gsap";
-import confetti from 'canvas-confetti';
+import confetti from "canvas-confetti";
+
 let confettiFrame = null;
-
-
-
 const { $supabase } = useNuxtApp();
-const PARTICIPANTS_TABLE = "participantes_genio";
+const PARTICIPANTS_TABLE = "jaguar";
 
-// Variables
+// Variables reactivas
 const participants = ref([]);
 const namesContainer = ref(null);
 const displayNames = ref([]);
 const showResult = ref(false);
-const showWinnerDialog = ref(false); // Control del diálogo del ganador
-const selectedWinner = ref(null); // Ganador seleccionado
-const selectedPrize = ref(null)
-const preloadedPrizes = ref(new Map());
+const showWinnerDialog = ref(false);
+const selectedWinner = ref(null);
 const showCongrats = ref(false);
-
-const baseUrl = 'https://sorteo.up.railway.app';
-
-const prizes = ref([
-`${baseUrl}/assets/images/band.png`,
-  `${baseUrl}/assets/images/dinero.png`,
-  `${baseUrl}/assets/images/moto.png`,
-  `${baseUrl}/assets/images/movil.png`,
-  `${baseUrl}/assets/images/nintendo.png`,
-]);
-const currentPrizeIndex = ref(0); // Índice del premio actual
-const currentPrize = ref(prizes.value[currentPrizeIndex.value]); // Premio actual
 const isSpinning = ref(false);
-let prizeInterval = null; // Intervalo para animar premios
 
 // Función para mezclar los nombres (sin duplicación)
 const shuffleNames = (arr) => {
@@ -132,237 +94,118 @@ const shuffleNames = (arr) => {
 };
 
 // Iniciar selección al hacer clic en el botón
-const startSelection = () => {
-  
+const startSelection = async () => {
   if (!isSpinning.value) {
+    // Si no hay participantes, evitamos iniciar la selección
+    if (!participants.value.length) {
+      console.error("No hay participantes para seleccionar.");
+      return;
+    }
     showResult.value = true;
-    spinSlotMachine(); // Inicia el proceso de selección
+    // Esperamos a que el DOM se actualice para que namesContainer ya esté renderizado
+    await nextTick();
+    spinSlotMachine();
   }
 };
-
 
 const resetAndSelectNewWinner = async () => {
   // Detener el confeti
   stopConfetti();
-  
+
   // Ocultar elementos actuales
   showCongrats.value = false;
   showWinnerDialog.value = false;
   showResult.value = false;
-  
+
   // Resetear variables
   selectedWinner.value = null;
-  selectedPrize.value = null;
-  currentPrize.value = prizes.value[0];
-  
+
   // Recargar los participantes
   await getGenioData();
-  
+
   // Pequeña pausa para asegurar que todo se ha reseteado
   setTimeout(() => {
-    // Iniciar nueva selección
     startSelection();
   }, 100);
 };
 
-
-// Función para animar los premios
-const startPrizeAnimation = () => {
-  if (prizeInterval) {
-    clearInterval(prizeInterval);
-  }
-
-  let lastIndex = -1;  // Para asegurar que siempre cambiamos la imagen
-  
-  prizeInterval = setInterval(() => {
-    // Asegurar que cambiamos a un índice diferente
-    let nextIndex;
-    do {
-      nextIndex = Math.floor(Math.random() * prizes.value.length);
-    } while (nextIndex === lastIndex);
-    
-    lastIndex = nextIndex;
-    currentPrizeIndex.value = nextIndex;
-    
-    // Crear una nueva imagen y esperar a que cargue
-    const newImage = new Image();
-    newImage.onload = () => {
-      // Una vez cargada, actualizar la URL
-      currentPrize.value = prizes.value[currentPrizeIndex.value];
-      
-      // Forzar repaint
-      const prizeImage = document.querySelector('.prize-image');
-      if (prizeImage) {
-        prizeImage.style.display = 'none';
-        prizeImage.offsetHeight; // Forzar reflow
-        prizeImage.style.display = '';
-      }
-    };
-    newImage.src = prizes.value[currentPrizeIndex.value];
-  }, 200); // Ajustado a 200ms para una animación más suave
-};
-
-
-// Detener animación de premios
-const stopPrizeAnimation = () => {
-  if (prizeInterval) {
-    clearInterval(prizeInterval);
-    prizeInterval = null;
-  }
-};
-
-const getRandomPrize = async () => {
-  try {
-    console.log('Obteniendo premios activos de Supabase')
-    const { data, error } = await $supabase
-      .from('ceteco_premios')
-      .select('*')
-      .eq('active', true)
-
-    if (error) {
-      console.error('Error al obtener premios:', error)
-      throw error
-    }
-    
-    console.log('Premios disponibles:', data)
-    if (data && data.length > 0) {
-      const randomIndex = Math.floor(Math.random() * data.length)
-      console.log('Premio seleccionado índice:', randomIndex)
-      return data[randomIndex]
-    }
-    return null
-  } catch (error) {
-    console.error('Error al obtener premio aleatorio:', error)
-    return null
-  }
-}
-
-
 const stopConfetti = () => {
-  // Cancelar el frame de animación
   if (confettiFrame) {
     cancelAnimationFrame(confettiFrame);
     confettiFrame = null;
   }
-  
   confetti.reset();
 };
 
-
 const spinSlotMachine = async () => {
-  isSpinning.value = true
+  isSpinning.value = true;
   try {
-    console.log('Iniciando selección de ganador')
-    const duration = 7
-    const itemHeight = 60
-    const winnerIndex = Math.floor(Math.random() * participants.value.length)
+    console.log("Iniciando selección de ganador");
+    const duration = 7;
+    const itemHeight = 60;
 
-    const totalDistance = participants.value.length * itemHeight
+    // Verificar que haya participantes
+    if (!participants.value.length) {
+      console.error("No hay participantes para animar");
+      return;
+    }
 
+    const winnerIndex = Math.floor(Math.random() * participants.value.length);
+    const totalDistance = participants.value.length * itemHeight;
+
+    // Animación de desplazamiento total
     await gsap.to(namesContainer.value, {
       y: -totalDistance,
       duration: duration,
       ease: "power2.inOut"
-    })
+    });
 
-    gsap.set(namesContainer.value, { y: 0 })
+    // Resetear posición y animar hasta el ganador
+    gsap.set(namesContainer.value, { y: 0 });
     await gsap.to(namesContainer.value, {
       y: -(winnerIndex * itemHeight),
       duration: 0.1,
       ease: "bounce.out"
-    })
+    });
 
-    // Seleccionar ganador y premio
-    const winner = participants.value[winnerIndex]
-    selectedWinner.value = winner
-    console.log('Ganador seleccionado:', winner)
+    // Seleccionar ganador
+    const winner = participants.value[winnerIndex];
+    selectedWinner.value = winner;
+    console.log("Ganador seleccionado:", winner);
 
-    // Mostrar el diálogo y comenzar animación de premios
-    showWinnerDialog.value = true
-    console.log('Mostrando diálogo de ganador')
-    startPrizeAnimation()
+    // Mostrar el diálogo de ganador
+    showWinnerDialog.value = true;
 
-    // Obtener y precargar el premio final mientras se muestra la animación
-    const finalPrize = await getRandomPrize()
-    
-    // Precargar la imagen del premio seleccionado
-    if (finalPrize) {
-      await new Promise((resolve) => {
-        const img = new Image()
-        img.onload = resolve
-        img.src = finalPrize.image
-      })
-    }
+    // Actualizar la columna winner a true en la tabla "jaguar"
+    await markWinner(winner.id);
 
-    // Después de un tiempo y con la imagen ya precargada, mostrar el premio final
-    setTimeout(async () => {
-      console.log('Mostrando premio final')
-      stopPrizeAnimation()
+    // Mostrar confeti y mensaje de felicitaciones
+    showCongrats.value = true;
+    showContinuousConfetti();
 
-      if (finalPrize) {
-        selectedPrize.value = finalPrize
-        currentPrize.value = finalPrize.image
-        console.log('Premio seleccionado:', finalPrize)
+    // Animar el nombre del ganador
+    await gsap.to(namesContainer.value.children[winnerIndex], {
+      scale: 1.5,
+      duration: 0.3,
+      ease: "power2.out"
+    });
 
-        try {
-          // Resto del código...
-          await createWinnerEntry(winner, finalPrize)
-          await markWinner(winner.id)
-          await markPrizeAsInactive(finalPrize.id)
-
-          showCongrats.value = true
-          showContinuousConfetti()
-
-          await gsap.to(namesContainer.value.children[winnerIndex], {
-            scale: 1.5,
-            duration: 0.3,
-            ease: "power2.out"
-          })
-
-          await gsap.to(namesContainer.value.children[winnerIndex], {
-            scale: 1,
-            duration: 0.2,
-            ease: "power2.in"
-          })
-
-        } catch (error) {
-          console.error('Error en el proceso:', error)
-        }
-      }
-    }, 3000)
-
+    await gsap.to(namesContainer.value.children[winnerIndex], {
+      scale: 1,
+      duration: 0.2,
+      ease: "power2.in"
+    });
   } catch (error) {
-    console.error('Error en el proceso de selección:', error)
+    console.error("Error en el proceso de selección:", error);
   } finally {
-    isSpinning.value = false
+    isSpinning.value = false;
   }
-}
-
-
-
-const markPrizeAsInactive = async (prizeId) => {
-  const { error } = await $supabase
-    .from('ceteco_premios')
-    .update({ active: false })
-    .eq('id', prizeId)
-
-  if (error) {
-    console.error('Error al marcar premio como inactivo:', error)
-    throw error
-  }
-}
-
-// Función para cerrar el diálogo del ganador
-const closeDialog = () => {
-  stopPrizeAnimation(); // Detener animación al cerrar
-  showWinnerDialog.value = false;
 };
 
-// Función para marcar el ganador en participantes_genio
 const markWinner = async (id) => {
   const { data, error } = await $supabase
     .from(PARTICIPANTS_TABLE)
-    .update({ winner: true })
+    .update({ winner: true })  // Se edita el registro modificando la columna winner a true
     .eq("id", id);
 
   if (error) {
@@ -374,58 +217,32 @@ const markWinner = async (id) => {
   }
 };
 
-// Función para crear la entrada del ganador en ganadoresCeteco
-const createWinnerEntry = async (winner, prize) => {
-  console.log('Creando entrada con datos:', { winner, prize })
-  try {
-    const { data, error } = await $supabase
-      .from('ganadoresCeteco')
-      .insert({
-        ganadorName: winner.name,
-        ganadorDepartamento: winner.departamento,
-        ganadorTelefono: winner.telefono,
-        premio: prize.name // Usar el campo correcto del premio
-      })
-
-    if (error) throw error
-    console.log('Entrada creada exitosamente:', data)
-    return data
-  } catch (error) {
-    console.error('Error al crear entrada:', error)
-    throw error
-  }
-}
-
-
-// Función para obtener los datos desde Supabase
 const getGenioData = async () => {
   try {
     const { data, error } = await $supabase
       .from(PARTICIPANTS_TABLE)
       .select("*")
-      .eq("winner", false) // Traer solo los que no son ganadores
+      .eq("winner", false)
       .limit(900);
 
     if (error) throw error;
 
-    participants.value = shuffleNames(data); // Mezclar participantes
-    displayNames.value = [...participants.value]; // Asignar a displayNames sin duplicar
+    console.log("Participantes obtenidos:", data.length);
+    participants.value = shuffleNames(data);
+    displayNames.value = [...participants.value];
   } catch (error) {
     console.error("Error al obtener datos:", error);
   }
 };
 
-
-
 const showContinuousConfetti = () => {
-  // Asegurarse de que confetti está disponible
-  if (typeof confetti === 'undefined') {
-    console.error('Confetti no está disponible');
+  if (typeof confetti === "undefined") {
+    console.error("Confetti no está disponible");
     return;
   }
-
-  const end = Date.now() + (15 * 1000);
-  const colors = ['#ff0000', '#ffffff', '#ff69b4'];
+   
+  const end = Date.now() + 15 * 1000;
+  const colors = ["#ffffff", "#adff2f", "#161fc6", "#38a9f0" ];
 
   const frame = () => {
     confetti({
@@ -436,7 +253,7 @@ const showContinuousConfetti = () => {
       colors: colors,
       zIndex: 3000
     });
-    
+
     confetti({
       particleCount: 3,
       angle: 120,
@@ -457,25 +274,27 @@ const showContinuousConfetti = () => {
     spread: 100,
     origin: { y: 0.3 },
     colors: colors,
-    zIndex: 3000,
+    zIndex: 3000
   });
 
   frame();
 };
-
-
 
 onMounted(() => {
   getGenioData(); // Cargar los participantes inicialmente
 });
 </script>
 
-
 <style scoped>
 .ganadorB {
-  width: 400px;
-  padding: 100px;
+  min-width: 200px;
+  padding: 20px 40px;
+  border: 1px solid ;
+  border-radius: 50px;
+  font-size: 30px;
   cursor: pointer;
+  background-color: rgb(163, 243, 44);
+font-weight: bolder;
   transition: transform 0.2s;
 }
 
@@ -484,20 +303,20 @@ onMounted(() => {
 }
 
 .header-genio {
-  width: 1000px;
+  width: 600px;
   position: relative;
   z-index: 10;
-  margin-top: -20px;
+  margin-top: 0px;
 }
 
 .containerGanador {
-  background-color: red;
+  background-color: #adff2f;
   padding: 15px 30px;
   width: 600px;
   height: 60px;
   border-radius: 50px;
-  border: 5px solid #fc7a7aca;
-  margin-top: -70px;
+  border: 5px solid rgb(138, 201, 43);
+  margin-top: -20px;
   overflow: hidden;
   display: flex;
   justify-content: center;
@@ -519,7 +338,7 @@ onMounted(() => {
 .name-item {
   height: 60px;
   font-size: 24px;
-  color: white;
+  color: black;
   font-weight: bold;
   display: flex;
   justify-content: center;
@@ -575,8 +394,8 @@ onMounted(() => {
 
 .newGanadorB {
   border-radius: 15px;
-  background-color: red;
-  color: white;
+  background-color: rgb(22, 31, 198);
+  color: #ffffff;
   font-size: 18px;
   padding: 12px 24px;
   border: none;
@@ -589,6 +408,9 @@ onMounted(() => {
   transform: scale(1.05);
 }
 
+.header-image{
+  width: 600px;}
+
 .dialog-content {
   text-align: center;
 }
@@ -600,31 +422,8 @@ onMounted(() => {
   font-weight: 400;
 }
 
-.prize-announcement {
-  font-size: 24px;
-  color: #ff0000;
-  margin-top: 20px;
-}
-
-.prize-display {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 20px 0;
-  height: 250px;
-  overflow: hidden;
-}
-
-.prize-image {
-  max-width: 200px;
-  max-height: 200px;
-  object-fit: contain;
-  transition: opacity 0.3s ease;
-}
-
-.el-overlay-dialog{
-
-  z-index: 200!important;
+.el-overlay-dialog {
+  z-index: 200 !important;
 }
 
 @media screen and (max-width: 768px) {
@@ -653,10 +452,6 @@ onMounted(() => {
 
   .dialog-text {
     font-size: 16px;
-  }
-
-  .prize-announcement {
-    font-size: 20px;
   }
 }
 </style>

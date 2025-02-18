@@ -1,12 +1,14 @@
 .main-body {
-  background-color: #ffd200;
-  padding: 0px;
+ 
+  padding: 0;
   min-height: 100vh;
-  background-image: url('/assets/images/image_3.png');
+  background-image: url('/assets/images/background.png');
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;
+  background-color: #25382d;
+  background-blend-mode: soft-light
 }
 
 body{
