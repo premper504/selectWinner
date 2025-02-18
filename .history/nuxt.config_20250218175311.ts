@@ -1,13 +1,15 @@
 export default defineNuxtConfig({
+
   css: [
-     '~/assets/css/style.css'
+    '~/assets/css/style.css' 
   ],
+
   app: {
     head: {
-      title: 'Ceteco Busca a los 12 soñadores del mundo',
+      title: 'SULA Jaguar - El Genio Ceteco cumple tus deseos ',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'Ceteco - El Genio Ceteco' }
+        { name: 'description', content: 'CETECO - El Genio Ceteco cumple tus deseos' }
       ],
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },

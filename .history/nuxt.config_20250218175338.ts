@@ -2,14 +2,14 @@ export default defineNuxtConfig({
 
   css: [
     '~/assets/css/style.css' 
-  ]
+  ],
 
   app: {
     head: {
-      title: 'Ceteco ',
+      title: 'SULA Jaguar - Un Jaguar protegido, un bosque vivo ',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'Ceteco - El Genio Ceteco' }
+        { name: 'description', content: 'CETECO - El Genio Ceteco cumple tus deseos' }
       ],
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
