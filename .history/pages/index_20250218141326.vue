@@ -10,7 +10,7 @@
         <div>
 
           <Button  class="ganadorB"  @click="startSelection" >
-Sorteo de Ganador
+Seleccionar Ganador
           </Button >
         
         </div>
@@ -303,10 +303,9 @@ font-weight: bolder;
 }
 
 .header-genio {
-  width: 850px;
+  width: 600px;
   position: relative;
   z-index: 10;
-  margin-left: 180px;
   margin-top: 0px;
 }
 
@@ -411,7 +410,7 @@ font-weight: bolder;
 
 .header-image{
   width: 800px;
-  margin-left: 200px;
+  margin-left: 300px;
 }
 
 .dialog-content {

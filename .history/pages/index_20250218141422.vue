@@ -10,7 +10,7 @@
         <div>
 
           <Button  class="ganadorB"  @click="startSelection" >
-Sorteo de Ganador
+Seleccionar Ganador
           </Button >
         
         </div>
