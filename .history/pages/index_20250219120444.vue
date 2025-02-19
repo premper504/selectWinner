@@ -141,7 +141,7 @@ const spinSlotMachine = async () => {
   isSpinning.value = true;
   try {
     console.log("Iniciando selección de ganador");
-    const duration = 4;
+    const duration = 3;
     const itemHeight = 60;
     
     if (!participants.value.length) {
@@ -152,7 +152,7 @@ const spinSlotMachine = async () => {
     // Selecciona un ganador aleatorio
     const winnerIndex = Math.floor(Math.random() * participants.value.length);
     const totalDistance = participants.value.length * itemHeight;
-    const loops = 6;
+    const loops = 3;
     
     // Animación continua sin saltos visibles:
     await gsap.to(namesContainer.value, {

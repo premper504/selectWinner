@@ -141,65 +141,69 @@ const spinSlotMachine = async () => {
   isSpinning.value = true;
   try {
     console.log("Iniciando selección de ganador");
-    const duration = 4;
+    const duration = 3;
     const itemHeight = 60;
-    
+
+    // Verificar que haya participantes
     if (!participants.value.length) {
       console.error("No hay participantes para animar");
       return;
     }
-    
-    // Selecciona un ganador aleatorio
+
     const winnerIndex = Math.floor(Math.random() * participants.value.length);
     const totalDistance = participants.value.length * itemHeight;
+
+    // Animación de desplazamiento total
     const loops = 6;
-    
-    // Animación continua sin saltos visibles:
     await gsap.to(namesContainer.value, {
-      y: -(totalDistance * loops),
-      duration: duration,
-      ease: "power2.inOut",
-      modifiers: {
-        y: (y) => {
-          // El valor se envuelve usando el módulo para un loop continuo
-          return (parseFloat(y) % totalDistance) + "px";
+        y: -totalDistance, // La distancia de una sola vuelta (todos los nombres)
+        duration: duration,
+        ease: "power2.inOut",
+        repeat: loops - 1, // Se repite loops-1 veces
+        modifiers: {
+          y: (y) => {
+            // Usamos el módulo para que la posición vuelva a 0 cada vez que se completa una vuelta
+            const mod = parseFloat(y) % totalDistance;
+            return mod + "px";
+          }
         }
-      }
-    });
-    
-    // Opcional: Resetear la posición a 0 antes de detener en el ganador
+      });
+
+    // Resetear posición y animar hasta el ganador
     gsap.set(namesContainer.value, { y: 0 });
-    
-    // Animación final para detener en el ganador
     await gsap.to(namesContainer.value, {
       y: -(winnerIndex * itemHeight),
       duration: 0.1,
       ease: "bounce.out"
     });
-    
-    // Seleccionar ganador, mostrar diálogo, etc.
+
+    // Seleccionar ganador
     const winner = participants.value[winnerIndex];
     selectedWinner.value = winner;
     console.log("Ganador seleccionado:", winner);
+
+    // Mostrar el diálogo de ganador
     showWinnerDialog.value = true;
-    
+
+    // Actualizar la columna winner a true en la tabla "jaguar"
     await markWinner(winner.id);
-    
+
+    // Mostrar confeti y mensaje de felicitaciones
     showCongrats.value = true;
     showContinuousConfetti();
-    
-    // Animar el ganador (opcional)
+
+    // Animar el nombre del ganador
     await gsap.to(namesContainer.value.children[winnerIndex], {
       scale: 1.5,
       duration: 0.3,
       ease: "power2.out"
     });
+
     await gsap.to(namesContainer.value.children[winnerIndex], {
       scale: 1,
       duration: 0.2,
       ease: "power2.in"
     });
-    
   } catch (error) {
     console.error("Error en el proceso de selección:", error);
   } finally {
