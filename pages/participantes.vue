@@ -232,6 +232,7 @@
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    background-color: #808080;
   }
   
   .logo {

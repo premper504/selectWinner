@@ -1,8 +1,8 @@
 <template>
-  <div class="main-body">
+  <div class="ganadores-body">
     <section style="padding: 10px;" class="maxwidth">
-      <div>
-        <img class="logo" src="assets/images/logoCeteco.png" alt="Cumple Deseo" />
+      <div class="page-title">
+        <h1>Ganadores</h1>
       </div>
     </section>
 
@@ -11,7 +11,7 @@
         <div class="header-right">
           <!-- Cuadro de registros -->
           <div>
-            <span><b>Ganadores: </b></span> {{ totalRecords }}
+            <span><b>Total: </b></span> {{ totalRecords }}
           </div>
 
           <!-- Filtro de fecha -->
@@ -62,32 +62,42 @@
 
         <!-- Columna del nombre -->
         <el-table-column 
-          prop="ganadorName" 
+          prop="name" 
           label="Nombre" 
-          min-width="50%"
+          min-width="40%"
           fixed="left"
         />
 
-        <!-- Columna del departamento -->
+        <!-- Columna de años -->
         <el-table-column 
-          prop="ganadorDepartamento" 
-          label="Departamento" 
-          min-width="25%"
+          prop="years" 
+          label="Años" 
+          min-width="15%"
+          align="center"
         />
 
-        <!-- Columna del teléfono -->
+        <!-- Columna de quinquenios -->
         <el-table-column 
-          prop="ganadorTelefono" 
-          label="Teléfono" 
-          min-width="25%"
+          prop="segment" 
+          label="Quinquenios" 
+          min-width="20%"
+          align="center"
         />
 
-        <!-- Columna del premio -->
+        <!-- Columna de ganador -->
         <el-table-column 
-          prop="premio" 
-          label="Premio" 
-          min-width="25%"
-        />
+          prop="winner" 
+          label="Ganador" 
+          min-width="15%"
+          align="center"
+        >
+          <template #default="scope">
+            <el-icon v-if="scope.row.winner" color="#67c23a" size="20">
+              <Check />
+            </el-icon>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
       </el-table>
 
       <!-- Paginación -->
@@ -116,9 +126,10 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useNuxtApp } from '#app'
 import { ElMessage, ElLoading } from 'element-plus'
+import { Check } from '@element-plus/icons-vue'
 import Papa from 'papaparse'
 
-const WINNERS_TABLE = 'ganadoresCeteco'
+const WINNERS_TABLE = 'tombola_lufussa'
 
 // Función para obtener la fecha de hoy en formato YYYY-MM-DD
 const getTodayDate = () => {
@@ -171,6 +182,7 @@ const fetchWinners = async (page = 1) => {
     let query = $supabase
       .from(WINNERS_TABLE)
       .select(`*`, { count: 'exact' })
+      .eq('winner', true)
       .order('created_at', { ascending: false })
 
     if (dateRange.value && dateRange.value.length === 2) {
@@ -227,6 +239,7 @@ const downloadCSV = async () => {
     let query = $supabase
       .from(WINNERS_TABLE)
       .select(`*`)
+      .eq('winner', true)
       .order('created_at', { ascending: false })
 
     if (dateRange.value && dateRange.value.length === 2) {
@@ -274,8 +287,22 @@ onUnmounted(() => {
 
 <style scoped>
 /* Estilos generales */
-.logo {
-  width: 200px;
+.ganadores-body {
+  padding: 0;
+  min-height: 100vh;
+  background-color: #e5e5e5;
+}
+
+.page-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.page-title h1 {
+  font-size: 36px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
 }
 
 .container {
@@ -317,6 +344,10 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
+  .page-title h1 {
+    font-size: 28px;
+  }
+
   .header-container {
     flex-direction: column;
     align-items: stretch;

@@ -6,10 +6,10 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'SULA Jaguar - Un Jaguar protegido, un bosque vivo ',
+      title: 'Tómbola Sorteo Lufussa 2025',
       meta: [
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'SULA Jaguar - Un Jaguar protegido, un bosque vivo' }
+        { name: 'description', content: 'Tómbola Sorteo Lufussa 2025' }
       ],
       link: [
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
