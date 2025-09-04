@@ -16,12 +16,12 @@
         <!-- Panel de configuración -->
         <div class="config-panel" v-show="showConfig">
           <div class="config-item">
-            <label>Segmento:</label>
+            <label>Pavana:</label>
             <select v-model="selectedSegment" class="config-select">
           
-              <option value="1-3">1-3 quinenios</option>
+              <option value="A-B-C">A-B-C</option>
              
-              <option value="4-5">4-5 quinenios</option>
+              <option value="D-E">D-E</option>
             </select>
           </div>
           
