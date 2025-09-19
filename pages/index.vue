@@ -16,12 +16,12 @@
         <!-- Panel de configuración -->
         <div class="config-panel" v-show="showConfig">
           <div class="config-item">
-            <label>Pavana:</label>
+            <label>User list</label>
             <select v-model="selectedSegment" class="config-select">
           
-              <option value="A-B-C">A-B-C</option>
+              <option value="A">A</option>
              
-              <option value="D-E">D-E</option>
+              
             </select>
           </div>
           
@@ -136,7 +136,7 @@ const isSpinning = ref(false);
 
 // Variables de configuración
 const showConfig = ref(false);
-const selectedSegment = ref("");
+const selectedSegment = ref("A");
 const winnersCount = ref("1");
 
 // Función para mezclar los nombres (sin duplicación)
@@ -201,7 +201,7 @@ const resetConfigAndGoToStart = () => {
   stopConfetti();
   
   // Resetear configuración
-  selectedSegment.value = "";
+  selectedSegment.value = "A";
   winnersCount.value = "1";
   
   // Ocultar elementos del modal
@@ -278,7 +278,7 @@ const spinSlotMachine = async () => {
   isSpinning.value = true;
   try {
     console.log("Iniciando selección de ganador(es)");
-    const duration = 4;
+    const duration = 12;
     const itemHeight = 60;
     
     if (!participants.value.length) {
