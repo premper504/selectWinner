@@ -64,6 +64,11 @@
           <el-table-column prop="place" label="Lugar de Compra" width="200" />
           <el-table-column prop="reciepCode" label="Código" width="150" />
           <el-table-column prop="product" label="Producto" width="200" />
+          <el-table-column prop="created_at" label="Fecha Registro" width="180">
+            <template #default="scope">
+              {{ formatDate(scope.row.created_at) }}
+            </template>
+          </el-table-column>
         </el-table>
   
         <!-- Paginación -->

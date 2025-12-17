@@ -464,7 +464,12 @@ const siguienteSorteo = async () => {
   showCongrats.value = false;
   ganadorActual.value = null;
   await cargarParticipantes();
-  iniciarSorteo();
+
+  // Mostrar pantalla con el siguiente premio por 4 segundos antes de sortear
+  currentScreen.value = "sorteo";
+  setTimeout(() => {
+    iniciarSorteo();
+  }, 4000);
 };
 
 const verHistorial = async () => {
