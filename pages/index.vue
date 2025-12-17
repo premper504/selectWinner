@@ -1,58 +1,92 @@
 <template>
   <div class="main-body">
-    <section class="header-section" v-show="!showResult">
-      <div class="header-container">
-        <div class="button-container">
-          <Button class="ganadorB" @click="startSelection">
-            Sorteo de Ganador
-          </Button>
-          
-          <!-- Icono de configuración -->
-          <Button class="configB" @click="toggleConfig">
-            ⚙️
-          </Button>
+    <!-- PANTALLA 1: Selección de Sorteo -->
+    <section class="selector-section" v-if="currentScreen === 'selector'">
+      <div class="selector-container">
+        <img src="/assets/images/tituloceteco.png" alt="Ceteco" class="main-logo" />
+        <h2 class="selector-subtitle">Selecciona Sorteo</h2>
+
+        <!-- Todos los Sorteos -->
+        <div class="sorteo-group">
+          <div class="sorteo-buttons">
+            <button
+              v-for="sorteo in smallSorteos"
+              :key="sorteo.id"
+              class="sorteo-btn small-btn"
+              :class="{ 'completado': sorteo.progreso >= sorteo.total }"
+              @click="seleccionarSorteo(sorteo.id)"
+            >
+              <span class="sorteo-id">{{ sorteo.id.toUpperCase() }}</span>
+              <span class="sorteo-progreso">{{ sorteo.progreso }}/{{ sorteo.total }}</span>
+            </button>
+            <button
+              v-for="sorteo in bigSorteos"
+              :key="sorteo.id"
+              class="sorteo-btn big-btn"
+              :class="{ 'completado': sorteo.progreso >= sorteo.total }"
+              @click="seleccionarSorteo(sorteo.id)"
+            >
+              <span class="sorteo-id">{{ sorteo.id.toUpperCase() }}</span>
+              <span class="sorteo-progreso">{{ sorteo.progreso }}/{{ sorteo.total }}</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Panel de configuración -->
-        <div class="config-panel" v-show="showConfig">
-          <div class="config-item">
-            <label>User list</label>
-            <select v-model="selectedSegment" class="config-select">
-          
-              <option value="A">A</option>
-             
-              
-            </select>
-          </div>
-          
-          <div class="config-item">
-            <label>Cantidad de ganadores:</label>
-            <select v-model="winnersCount" class="config-select">
-              <option value="1">1 Ganador</option>
-              <option value="2">2 Ganadores</option>
-              <option value="3">3 Ganadores</option>
-              <option value="4">4 Ganadores</option>
-              <option value="5">5 Ganadores</option>
-            </select>
-          </div>
-          
-                     <div class="config-actions">
-             <Button class="config-apply" @click="applyConfig">
-               Aplicar Configuración
-             </Button>
-           </div>
-           
-           <div class="config-reset-section">
-             <Button class="config-reset-small" @click="confirmResetAllWinners">
-               Reset All
-             </Button>
-           </div>
-         </div>
+        <!-- Botones de acción -->
+        <div class="action-buttons">
+          <button class="btn-historial" @click="verHistorial">
+            📋 Ver Ganadores
+          </button>
+          <button class="btn-reset-all" @click="confirmResetAll">
+            🔄 Reset Todo
+          </button>
+        </div>
       </div>
     </section>
 
-    <section class="result-section" v-show="showResult">
+    <!-- PANTALLA 2: Sorteo Activo -->
+    <section class="sorteo-section" v-if="currentScreen === 'sorteo'">
+      <div class="sorteo-header">
+        <button class="btn-volver" @click="volverAlSelector">← Volver</button>
+        <h2 class="sorteo-titulo">Sorteo {{ sorteoSeleccionado?.toUpperCase() }}</h2>
+        <span class="sorteo-progreso-header">{{ progresoActual }}/{{ sorteoActual?.total }}</span>
+      </div>
+
+      <!-- Premio actual -->
+      <div class="premio-container" v-if="premioActual">
+        <div class="premio-card">
+          <img :src="premioActual.imagen" :alt="premioActual.nombre" class="premio-imagen" />
+          <h3 class="premio-nombre">{{ premioActual.nombre }}</h3>
+          <p class="premio-contador">Premio {{ premioActualNumero }} de {{ premioActual.cantidad }}</p>
+        </div>
+      </div>
+
+      <!-- Mensaje si ya se completó -->
+      <div class="sorteo-completado" v-else>
+        <h3>🎉 ¡Sorteo Completado!</h3>
+        <p>Todos los premios han sido entregados.</p>
+      </div>
+
+      <!-- Botón de sortear -->
+      <div class="sorteo-actions">
+        <button
+          class="btn-sortear"
+          @click="iniciarSorteo"
+          :disabled="!premioActual || isSpinning"
+          v-if="premioActual"
+        >
+          🎰 SORTEAR
+        </button>
+        <button class="btn-reset-sorteo" @click="confirmResetSorteo">
+          Reset {{ sorteoSeleccionado?.toUpperCase() }}
+        </button>
+      </div>
+    </section>
+
+    <!-- PANTALLA 3: Animación del Sorteo -->
+    <section class="animacion-section" v-if="currentScreen === 'animacion'">
       <div class="containerResultado">
+        <img src="/assets/images/tituloceteco.png" alt="Ceteco" class="animacion-logo" />
         <div class="containerGanador">
           <div class="blur-overlay top"></div>
           <div ref="namesContainer" class="names-container">
@@ -66,204 +100,493 @@
           </div>
           <div class="blur-overlay bottom"></div>
         </div>
+        <img src="/assets/images/genio.png" alt="Genio" class="animacion-genio" />
+      </div>
+    </section>
+
+    <!-- MODAL: Ganador -->
+    <el-dialog v-model="showWinnerDialog" title="🎉 ¡Tenemos Ganador!" width="70%" :close-on-click-modal="false">
+      <div class="dialog-content">
+        <div class="winner-premio">
+          <img :src="premioGanado?.imagen" :alt="premioGanado?.nombre" class="winner-premio-img" />
+          <h3>{{ premioGanado?.nombre }}</h3>
+        </div>
+        <div class="winner-info">
+          <p class="winner-codigo">{{ codigoGanador }}</p>
+          <h2 class="winner-nombre">{{ ganadorActual?.name }}</h2>
+        </div>
       </div>
 
-      <!-- Diálogo con los ganadores -->
-      <el-dialog v-model="showWinnerDialog" :title="getDialogTitle()" width="70%">
-        <div class="dialog-content">
-          <div v-for="(winner, index) in selectedWinners" :key="index" class="winner-item">
-            <div class="winner-position">{{ getWinnerPosition(index) }}</div>
-            <div class="dialog-text" style="font-size: 32px; font-weight: 900;">
-              {{ winner?.name }} {{ winner?.lastname }}
-            </div>
-          </div>
+      <div class="congrats-text" v-show="showCongrats">
+        ¡FELICIDADES!
+      </div>
+
+      <template #footer>
+        <div class="modal-footer-buttons">
+          <el-button @click="cerrarYVolver" class="btn-modal-volver">
+            Volver al Sorteo
+          </el-button>
+          <el-button @click="siguienteSorteo" class="btn-modal-siguiente" v-if="premioActual">
+            Siguiente Premio →
+          </el-button>
         </div>
-        
-        <div ref="congratsText" class="congrats-text" v-show="showCongrats">
-          ¡FELICIDADES A {{ winnersCount > 1 ? 'TODOS LOS GANADORES' : 'NUESTRO GANADOR' }}!
-        </div>
+      </template>
+    </el-dialog>
 
-        <template #footer>
-          <div class="modal-footer-buttons">
-           
-            <el-button
-              v-show="showCongrats"
-              @click="resetConfigAndGoToStart"
-              class="resetConfigB"
-            >
-              Reset
-            </el-button>
-
-            
-            <el-button
-              v-show="showCongrats"
-              @click="resetAndSelectNewWinner"
-              class="newGanadorB"
-            >
-              Nuevo Sorteo
-            </el-button>
-
-          
-          </div>
-        </template>
-      </el-dialog>
-
-      <!-- Botón para nuevo ganador (opcional) -->
-      <div class="newGanador"></div>
-    </section>
+    <!-- MODAL: Historial de Ganadores -->
+    <el-dialog v-model="showHistorial" title="📋 Historial de Ganadores" width="80%">
+      <div class="historial-filtros">
+        <select v-model="historialFiltro" class="filtro-select">
+          <option value="">Todos los sorteos</option>
+          <option v-for="id in Object.keys(sorteosConfig)" :key="id" :value="id">
+            {{ id.toUpperCase() }}
+          </option>
+        </select>
+      </div>
+      <el-table :data="historialFiltrado" style="width: 100%" max-height="400">
+        <el-table-column prop="codigo" label="Código" width="100" />
+        <el-table-column prop="participante_nombre" label="Ganador" />
+        <el-table-column prop="premio" label="Premio" />
+        <el-table-column prop="created_at" label="Fecha" width="180">
+          <template #default="scope">
+            {{ formatDate(scope.row.created_at) }}
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
 import { useNuxtApp } from "#app";
 import gsap from "gsap";
 import confetti from "canvas-confetti";
+import sorteosConfig from "~/config/sorteos.json";
 
-let confettiFrame = null;
 const { $supabase } = useNuxtApp();
-const PARTICIPANTS_TABLE = "tombola_lufussa";
 
-// Variables reactivas
+// Constantes
+const PARTICIPANTS_TABLE = "ceteco_genio";
+const SORTEOS_TABLE = "sorteos_genio";
+
+// Estado de pantallas
+const currentScreen = ref("selector"); // selector, sorteo, animacion
+
+// Estado de sorteos
+const sorteoSeleccionado = ref(null);
+const progresosPorSorteo = ref({});
+const premiosPorSorteo = ref({}); // Cuenta de premios entregados por tipo
+
+// Estado del sorteo activo
 const participants = ref([]);
-const namesContainer = ref(null);
 const displayNames = ref([]);
-const showResult = ref(false);
-const showWinnerDialog = ref(false);
-const selectedWinners = ref([]); // Cambiado de selectedWinner a selectedWinners (array)
-const showCongrats = ref(false);
+const namesContainer = ref(null);
 const isSpinning = ref(false);
 
-// Variables de configuración
-const showConfig = ref(false);
-const selectedSegment = ref("A");
-const winnersCount = ref("1");
+// Estado del ganador
+const ganadorActual = ref(null);
+const premioGanado = ref(null);
+const codigoGanador = ref("");
+const showWinnerDialog = ref(false);
+const showCongrats = ref(false);
 
-// Función para mezclar los nombres (sin duplicación)
-const shuffleNames = (arr) => {
-  return [...arr].sort(() => Math.random() - 0.5);
-};
+// Historial
+const showHistorial = ref(false);
+const historialGanadores = ref([]);
+const historialFiltro = ref("");
 
-// Toggle del panel de configuración
-const toggleConfig = () => {
-  showConfig.value = !showConfig.value;
-};
+// Confetti
+let confettiFrame = null;
 
-// Aplicar configuración
-const applyConfig = () => {
-  console.log("Configuración aplicada:", {
-    segment: selectedSegment.value,
-    winnersCount: winnersCount.value
+// Computed
+const smallSorteos = computed(() => {
+  return Object.entries(sorteosConfig)
+    .filter(([_, config]) => config.tipo === "small")
+    .map(([id, config]) => ({
+      id,
+      ...config,
+      progreso: progresosPorSorteo.value[id] || 0
+    }));
+});
+
+const bigSorteos = computed(() => {
+  return Object.entries(sorteosConfig)
+    .filter(([_, config]) => config.tipo === "big")
+    .map(([id, config]) => ({
+      id,
+      ...config,
+      progreso: progresosPorSorteo.value[id] || 0
+    }));
+});
+
+const sorteoActual = computed(() => {
+  if (!sorteoSeleccionado.value) return null;
+  return {
+    id: sorteoSeleccionado.value,
+    ...sorteosConfig[sorteoSeleccionado.value]
+  };
+});
+
+const progresoActual = computed(() => {
+  return progresosPorSorteo.value[sorteoSeleccionado.value] || 0;
+});
+
+const premioActual = computed(() => {
+  if (!sorteoActual.value) return null;
+
+  const premiosEntregados = premiosPorSorteo.value[sorteoSeleccionado.value] || {};
+  const premios = sorteoActual.value.premios;
+
+  // Filtrar premios que aún tienen disponibles (sin el marcado como ultimo)
+  let disponibles = premios.filter(p => {
+    const entregados = premiosEntregados[p.nombre] || 0;
+    return entregados < p.cantidad && !p.ultimo;
   });
-  showConfig.value = false;
-  // Recargar participantes con la nueva configuración
-  getGenioData();
-};
 
-// Confirmación para reset de todos los ganadores
-const confirmResetAllWinners = () => {
-  if (confirm("¿Estás seguro que quieres hacer reset? Se perderán todos los ganadores.")) {
-    resetAllWinners();
+  // Si no hay disponibles (excepto ultimo), usar el ultimo
+  if (disponibles.length === 0) {
+    disponibles = premios.filter(p => {
+      const entregados = premiosEntregados[p.nombre] || 0;
+      return entregados < p.cantidad && p.ultimo;
+    });
+  }
+
+  if (disponibles.length === 0) return null;
+
+  // Seleccionar random entre disponibles
+  return disponibles[Math.floor(Math.random() * disponibles.length)];
+});
+
+const premioActualNumero = computed(() => {
+  if (!premioActual.value || !sorteoSeleccionado.value) return 0;
+  const premiosEntregados = premiosPorSorteo.value[sorteoSeleccionado.value] || {};
+  return (premiosEntregados[premioActual.value.nombre] || 0) + 1;
+});
+
+const historialFiltrado = computed(() => {
+  if (!historialFiltro.value) return historialGanadores.value;
+  return historialGanadores.value.filter(g => g.sorteo_id === historialFiltro.value);
+});
+
+// Funciones
+const cargarProgresos = async () => {
+  try {
+    const { data, error } = await $supabase
+      .from(SORTEOS_TABLE)
+      .select("sorteo_id, premio");
+
+    if (error) throw error;
+
+    // Contar progreso por sorteo
+    const progresos = {};
+    const premios = {};
+
+    data.forEach(row => {
+      // Progreso total
+      progresos[row.sorteo_id] = (progresos[row.sorteo_id] || 0) + 1;
+
+      // Premios por tipo
+      if (!premios[row.sorteo_id]) premios[row.sorteo_id] = {};
+      premios[row.sorteo_id][row.premio] = (premios[row.sorteo_id][row.premio] || 0) + 1;
+    });
+
+    progresosPorSorteo.value = progresos;
+    premiosPorSorteo.value = premios;
+
+  } catch (error) {
+    console.error("Error al cargar progresos:", error);
   }
 };
 
-// Reset de todos los ganadores en la BD
-const resetAllWinners = async () => {
+const cargarParticipantes = async () => {
   try {
-    console.log("Reseteando todos los ganadores...");
-    
     const { data, error } = await $supabase
       .from(PARTICIPANTS_TABLE)
-      .update({ winner: false })
+      .select("*")
+      .or("winner.is.null,winner.eq.false")
+      .limit(900);
+
+    if (error) throw error;
+
+    participants.value = shuffleArray(data);
+    displayNames.value = [...participants.value];
+
+  } catch (error) {
+    console.error("Error al cargar participantes:", error);
+  }
+};
+
+const cargarHistorial = async () => {
+  try {
+    const { data, error } = await $supabase
+      .from(SORTEOS_TABLE)
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    historialGanadores.value = data;
+
+  } catch (error) {
+    console.error("Error al cargar historial:", error);
+  }
+};
+
+const seleccionarSorteo = async (id) => {
+  sorteoSeleccionado.value = id;
+  await cargarParticipantes();
+  currentScreen.value = "sorteo";
+};
+
+const volverAlSelector = () => {
+  sorteoSeleccionado.value = null;
+  currentScreen.value = "selector";
+};
+
+const iniciarSorteo = async () => {
+  if (!participants.value.length) {
+    alert("No hay participantes disponibles");
+    return;
+  }
+
+  if (isSpinning.value) return;
+
+  currentScreen.value = "animacion";
+  await nextTick();
+  await spinSlotMachine();
+};
+
+const spinSlotMachine = async () => {
+  isSpinning.value = true;
+
+  try {
+    const duration = 8;
+    const itemHeight = 60;
+
+    // Seleccionar ganador aleatorio
+    const winnerIndex = Math.floor(Math.random() * participants.value.length);
+    const winner = participants.value[winnerIndex];
+
+    const totalDistance = participants.value.length * itemHeight;
+    const loops = 5;
+
+    // Animación
+    await gsap.to(namesContainer.value, {
+      y: -(totalDistance * loops),
+      duration: duration,
+      ease: "power2.inOut",
+      modifiers: {
+        y: (y) => (parseFloat(y) % totalDistance) + "px"
+      }
+    });
+
+    gsap.set(namesContainer.value, { y: 0 });
+
+    await gsap.to(namesContainer.value, {
+      y: -(winnerIndex * itemHeight),
+      duration: 0.5,
+      ease: "bounce.out"
+    });
+
+    // Guardar ganador
+    await guardarGanador(winner);
+
+  } catch (error) {
+    console.error("Error en sorteo:", error);
+  } finally {
+    isSpinning.value = false;
+  }
+};
+
+const guardarGanador = async (winner) => {
+  try {
+    const sorteoId = sorteoSeleccionado.value;
+    const progreso = (progresosPorSorteo.value[sorteoId] || 0) + 1;
+    const codigo = `${sorteoId}-${progreso}`;
+    const premio = premioActual.value;
+
+    // Guardar en sorteos_genio
+    const { error: errorSorteo } = await $supabase
+      .from(SORTEOS_TABLE)
+      .insert({
+        codigo,
+        sorteo_id: sorteoId,
+        participante_id: winner.id,
+        participante_nombre: winner.name,
+        premio: premio.nombre,
+        imagen_premio: premio.imagen
+      });
+
+    if (errorSorteo) throw errorSorteo;
+
+    // Actualizar participante
+    const { error: errorParticipante } = await $supabase
+      .from(PARTICIPANTS_TABLE)
+      .update({ winner: true, codwinner: codigo })
+      .eq("id", winner.id);
+
+    if (errorParticipante) throw errorParticipante;
+
+    // Actualizar estado local
+    ganadorActual.value = winner;
+    premioGanado.value = premio;
+    codigoGanador.value = codigo;
+
+    // Actualizar progresos
+    progresosPorSorteo.value[sorteoId] = progreso;
+    if (!premiosPorSorteo.value[sorteoId]) premiosPorSorteo.value[sorteoId] = {};
+    premiosPorSorteo.value[sorteoId][premio.nombre] =
+      (premiosPorSorteo.value[sorteoId][premio.nombre] || 0) + 1;
+
+    // Mostrar modal
+    currentScreen.value = "sorteo";
+    showWinnerDialog.value = true;
+    showCongrats.value = true;
+    showContinuousConfetti();
+
+  } catch (error) {
+    console.error("Error al guardar ganador:", error);
+    alert("Error al guardar ganador. Intenta de nuevo.");
+  }
+};
+
+const cerrarYVolver = () => {
+  stopConfetti();
+  showWinnerDialog.value = false;
+  showCongrats.value = false;
+  ganadorActual.value = null;
+  cargarParticipantes();
+};
+
+const siguienteSorteo = async () => {
+  stopConfetti();
+  showWinnerDialog.value = false;
+  showCongrats.value = false;
+  ganadorActual.value = null;
+  await cargarParticipantes();
+  iniciarSorteo();
+};
+
+const verHistorial = async () => {
+  await cargarHistorial();
+  showHistorial.value = true;
+};
+
+const confirmResetSorteo = () => {
+  const sorteoId = sorteoSeleccionado.value?.toUpperCase();
+  if (confirm(`¿Estás seguro que quieres resetear ${sorteoId}? Se eliminarán todos los ganadores de este sorteo.`)) {
+    resetSorteo(sorteoSeleccionado.value);
+  }
+};
+
+const resetSorteo = async (sorteoId) => {
+  try {
+    // Obtener participantes de este sorteo
+    const { data: ganadores } = await $supabase
+      .from(SORTEOS_TABLE)
+      .select("participante_id")
+      .eq("sorteo_id", sorteoId);
+
+    if (ganadores?.length) {
+      // Resetear participantes
+      const ids = ganadores.map(g => g.participante_id);
+      await $supabase
+        .from(PARTICIPANTS_TABLE)
+        .update({ winner: false, codwinner: null })
+        .in("id", ids);
+    }
+
+    // Eliminar registros del sorteo
+    await $supabase
+      .from(SORTEOS_TABLE)
+      .delete()
+      .eq("sorteo_id", sorteoId);
+
+    // Recargar
+    await cargarProgresos();
+    await cargarParticipantes();
+
+    alert(`✅ Sorteo ${sorteoId.toUpperCase()} reseteado`);
+
+  } catch (error) {
+    console.error("Error al resetear sorteo:", error);
+    alert("Error al resetear sorteo");
+  }
+};
+
+const confirmResetAll = () => {
+  if (confirm("⚠️ ¿Estás seguro que quieres resetear TODOS los sorteos? Esta acción no se puede deshacer.")) {
+    resetAll();
+  }
+};
+
+const resetAll = async () => {
+  try {
+    // Resetear todos los participantes
+    await $supabase
+      .from(PARTICIPANTS_TABLE)
+      .update({ winner: false, codwinner: null })
       .eq("winner", true);
 
-    if (error) {
-      console.error("Error al resetear ganadores:", error);
-      alert("Error al resetear ganadores. Por favor intenta de nuevo.");
-      return;
-    }
+    // Eliminar todos los registros de sorteos
+    await $supabase
+      .from(SORTEOS_TABLE)
+      .delete()
+      .neq("id", 0); // Truco para eliminar todo
 
-    console.log("Ganadores reseteados correctamente:", data);
-    alert("✅ Todos los ganadores han sido reseteados exitosamente");
-    
-    // Recargar participantes
-    await getGenioData();
-    
+    // Recargar
+    await cargarProgresos();
+
+    alert("✅ Todos los sorteos han sido reseteados");
+
   } catch (error) {
-    console.error("Error en resetAllWinners:", error);
-    alert("Error inesperado al resetear ganadores");
+    console.error("Error al resetear todo:", error);
+    alert("Error al resetear");
   }
 };
 
-// Reset de configuración y volver al inicio
-const resetConfigAndGoToStart = () => {
-  // Detener el confeti
-  stopConfetti();
-  
-  // Resetear configuración
-  selectedSegment.value = "A";
-  winnersCount.value = "1";
-  
-  // Ocultar elementos del modal
-  showCongrats.value = false;
-  showWinnerDialog.value = false;
-  showResult.value = false;
-  
-  // Resetear ganadores seleccionados
-  selectedWinners.value = [];
-  
-  // Mostrar mensaje de reset
-  console.log("Configuración reseteada");
-  
-  // Recargar participantes con configuración por defecto
-  getGenioData();
+// Utilidades
+const shuffleArray = (arr) => [...arr].sort(() => Math.random() - 0.5);
+
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toLocaleString("es-HN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 };
 
-// Obtener título del diálogo basado en cantidad de ganadores
-const getDialogTitle = () => {
-  return parseInt(winnersCount.value) > 1 ? "¡Tenemos Ganadores!" : "¡Tenemos Ganador/a!";
-};
+const showContinuousConfetti = () => {
+  const end = Date.now() + 10 * 1000;
+  const colors = ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff"];
 
-// Obtener posición del ganador (1°, 2°, etc.)
-const getWinnerPosition = (index) => {
-  const positions = ["1°", "2°", "3°", "4°", "5°"];
-  return positions[index] || `${index + 1}°`;
-};
+  const frame = () => {
+    confetti({
+      particleCount: 3,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0, y: 0.5 },
+      colors
+    });
+    confetti({
+      particleCount: 3,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1, y: 0.5 },
+      colors
+    });
 
-// Iniciar selección al hacer clic en el botón
-const startSelection = async () => {
-  if (!isSpinning.value) {
-    // Si no hay participantes, evitamos iniciar la selección
-    if (!participants.value.length) {
-      console.error("No hay participantes para seleccionar.");
-      return;
+    if (Date.now() < end) {
+      confettiFrame = requestAnimationFrame(frame);
     }
-    showResult.value = true;
-    // Esperamos a que el DOM se actualice para que namesContainer ya esté renderizado
-    await nextTick();
-    spinSlotMachine();
-  }
-};
+  };
 
-const resetAndSelectNewWinner = async () => {
-  // Detener el confeti
-  stopConfetti();
-
-  // Ocultar elementos actuales
-  showCongrats.value = false;
-  showWinnerDialog.value = false;
-  showResult.value = false;
-
-  // Resetear variables
-  selectedWinners.value = [];
-
-  // Recargar los participantes con la configuración actual
-  await getGenioData();
-
-  // Pequeña pausa para asegurar que todo se ha reseteado
-  setTimeout(() => {
-    startSelection();
-  }, 100);
+  confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 }, colors });
+  frame();
 };
 
 const stopConfetti = () => {
@@ -274,374 +597,288 @@ const stopConfetti = () => {
   confetti.reset();
 };
 
-const spinSlotMachine = async () => {
-  isSpinning.value = true;
-  try {
-    console.log("Iniciando selección de ganador(es)");
-    const duration = 12;
-    const itemHeight = 60;
-    
-    if (!participants.value.length) {
-      console.error("No hay participantes para animar");
-      return;
-    }
-    
-    // Seleccionar múltiples ganadores aleatorios
-    const numberOfWinners = parseInt(winnersCount.value);
-    const winnersIndices = [];
-    const availableIndices = [...Array(participants.value.length).keys()];
-    
-    // Seleccionar ganadores únicos
-    for (let i = 0; i < numberOfWinners && availableIndices.length > 0; i++) {
-      const randomIndex = Math.floor(Math.random() * availableIndices.length);
-      const selectedIndex = availableIndices.splice(randomIndex, 1)[0];
-      winnersIndices.push(selectedIndex);
-    }
-    
-    console.log("Índices de ganadores:", winnersIndices);
-    
-    const totalDistance = participants.value.length * itemHeight;
-    const loops = 6;
-    
-    // Animación continua sin saltos visibles:
-    await gsap.to(namesContainer.value, {
-      y: -(totalDistance * loops),
-      duration: duration,
-      ease: "power2.inOut",
-      modifiers: {
-        y: (y) => {
-          return (parseFloat(y) % totalDistance) + "px";
-        }
-      }
-    });
-    
-    // Resetear la posición a 0 antes de detener en el primer ganador
-    gsap.set(namesContainer.value, { y: 0 });
-    
-    // Animación final para detener en el primer ganador
-    await gsap.to(namesContainer.value, {
-      y: -(winnersIndices[0] * itemHeight),
-      duration: 0.1,
-      ease: "bounce.out"
-    });
-    
-    // Seleccionar todos los ganadores
-    const winners = winnersIndices.map(index => participants.value[index]);
-    selectedWinners.value = winners;
-    console.log("Ganadores seleccionados:", winners);
-    showWinnerDialog.value = true;
-    
-    // Marcar todos los ganadores en la base de datos
-    for (const winner of winners) {
-      await markWinner(winner.id);
-    }
-    
-    showCongrats.value = true;
-    showContinuousConfetti();
-    
-    // Animar todos los ganadores (opcional)
-    for (const index of winnersIndices) {
-      if (namesContainer.value.children[index]) {
-        await gsap.to(namesContainer.value.children[index], {
-          scale: 1.5,
-          duration: 0.3,
-          ease: "power2.out"
-        });
-        await gsap.to(namesContainer.value.children[index], {
-          scale: 1,
-          duration: 0.2,
-          ease: "power2.in"
-        });
-      }
-    }
-    
-  } catch (error) {
-    console.error("Error en el proceso de selección:", error);
-  } finally {
-    isSpinning.value = false;
-  }
-};
-
-const markWinner = async (id) => {
-  const { data, error } = await $supabase
-    .from(PARTICIPANTS_TABLE)
-    .update({ winner: true })
-    .eq("id", id);
-
-  if (error) {
-    console.error(`Error al marcar el ganador en ${PARTICIPANTS_TABLE}:`, error);
-    throw error;
-  } else {
-    console.log(`Ganador marcado correctamente en ${PARTICIPANTS_TABLE}:`, data);
-    return data;
-  }
-};
-
-const getGenioData = async () => {
-  try {
-    console.log("Consultando tabla:", PARTICIPANTS_TABLE);
-    console.log("Segmento seleccionado:", selectedSegment.value);
-    
-    let query = $supabase
-      .from(PARTICIPANTS_TABLE)
-      .select("*")
-      .or("winner.is.null,winner.eq.false");
-    
-    // Aplicar filtro de segmento si está seleccionado
-    if (selectedSegment.value && selectedSegment.value !== "") {
-      query = query.eq("segment", selectedSegment.value);
-    }
-    
-    const { data, error } = await query.limit(900);
-
-    if (error) throw error;
-
-    console.log("Participantes elegibles:", data.length);
-    console.log("Configuración actual:", {
-      segment: selectedSegment.value || "Todos",
-      winnersCount: winnersCount.value
-    });
-    
-    participants.value = shuffleNames(data);
-    displayNames.value = [...participants.value];
-  } catch (error) {
-    console.error("Error al obtener datos:", error);
-  }
-};
-
-const showContinuousConfetti = () => {
-  if (typeof confetti === "undefined") {
-    console.error("Confetti no está disponible");
-    return;
-  }
-   
-  const end = Date.now() + 15 * 1000;
-  const colors = ["#ffffff", "#adff2f", "#161fc6", "#38a9f0"];
-
-  const frame = () => {
-    confetti({
-      particleCount: 3,
-      angle: 60,
-      spread: 55,
-      origin: { x: 0, y: 0.3 },
-      colors: colors,
-      zIndex: 3000
-    });
-
-    confetti({
-      particleCount: 3,
-      angle: 120,
-      spread: 55,
-      origin: { x: 1, y: 0.3 },
-      colors: colors,
-      zIndex: 3000
-    });
-
-    if (Date.now() < end) {
-      confettiFrame = requestAnimationFrame(frame);
-    }
-  };
-
-  // Explosión inicial
-  confetti({
-    particleCount: 150,
-    spread: 100,
-    origin: { y: 0.3 },
-    colors: colors,
-    zIndex: 3000
-  });
-
-  frame();
-};
-
+// Inicialización
 onMounted(() => {
-  getGenioData();
+  cargarProgresos();
 });
 </script>
 
 <style scoped>
-.button-container {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  justify-content: center;
+.main-body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding: 20px;
 }
 
-.ganadorB {
-  min-width: 200px;
-  padding: 20px 40px;
-  border: 1px solid;
-  border-radius: 50px;
-  font-size: 30px;
-  color: white;
-  cursor: pointer;
-  background-color: rgb(61, 44, 243);
-  font-weight: bolder;
-  transition: transform 0.2s;
+/* Selector de Sorteos */
+.selector-container {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
 }
 
-.ganadorB:hover {
-  transform: scale(1.05);
-}
-
-.configB {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.configB:hover {
-  background-color: #5a6268;
-  transform: scale(1.1);
-}
-
-.config-panel {
-  background: white;
-  border: 2px solid #ddd;
-  border-radius: 15px;
-  padding: 25px;
-  margin-top: 20px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+.main-logo {
   max-width: 400px;
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.config-item {
+  height: auto;
   margin-bottom: 20px;
 }
 
-.config-item label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #333;
-  font-size: 16px;
-}
-
-.config-select {
-  width: 100%;
-  padding: 12px 15px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 16px;
-  background-color: white;
-  cursor: pointer;
-  transition: border-color 0.3s ease;
-}
-
-.config-select:focus {
-  outline: none;
-  border-color: rgb(61, 44, 243);
-}
-
-.config-actions {
-  text-align: center;
-  margin-top: 25px;
-}
-
-.config-apply {
-  background-color: rgb(61, 44, 243);
+.selector-subtitle {
   color: white;
-  padding: 12px 30px;
-  border: none;
-  border-radius: 25px;
-  font-size: 16px;
+  font-size: 1.5rem;
+  margin-bottom: 30px;
   font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-.config-apply:hover {
-  background-color: rgb(51, 34, 233);
-  transform: scale(1.05);
+.sorteo-group {
+  margin-bottom: 30px;
 }
 
-.config-reset-section {
-  margin-top: 15px;
-  text-align: center;
-  border-top: 1px solid #eee;
-  padding-top: 15px;
+.group-title {
+  color: #a0a0a0;
+  font-size: 1.2rem;
+  margin-bottom: 15px;
 }
 
-.config-reset-small {
-  background-color: #6c757d;
-  color: white;
-  padding: 8px 20px;
-  border: none;
-  border-radius: 15px;
-  font-size: 12px;
-  font-weight: normal;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.config-reset-small:hover {
-  background-color: #dc3545;
-  transform: scale(1.05);
-}
-
-.modal-footer-buttons {
+.sorteo-buttons {
   display: flex;
-  gap: 15px;
   justify-content: center;
+  gap: 15px;
+  flex-wrap: wrap;
 }
 
-.resetConfigB {
-  border-radius: 15px;
-  background-color: #6c757d;
-  color: #ffffff;
-  font-size: 18px;
-  padding: 12px 24px;
+.sorteo-btn {
+  width: 120px;
+  height: 100px;
   border: none;
+  border-radius: 15px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.sorteo-btn:hover {
+  transform: scale(1.05);
+}
+
+.small-btn {
+  background: linear-gradient(135deg, #f5a623 0%, #ff8f00 100%);
+  box-shadow: 0 4px 15px rgba(245, 166, 35, 0.4);
+}
+
+.big-btn {
+  background: linear-gradient(135deg, #e53935 0%, #c62828 100%);
+  box-shadow: 0 4px 15px rgba(229, 57, 53, 0.4);
+}
+
+.sorteo-btn.completado {
+  background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+}
+
+.sorteo-id {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: white;
+}
+
+.sorteo-progreso {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 5px;
+}
+
+.action-buttons {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+.btn-historial, .btn-reset-all {
+  padding: 15px 30px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.resetConfigB:hover {
-  background-color: #5a6268;
+.btn-historial {
+  background: #3498db;
+  color: white;
+}
+
+.btn-reset-all {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-historial:hover, .btn-reset-all:hover {
   transform: scale(1.05);
 }
 
-.result-section {
-  padding-top: 50vh;
+/* Pantalla de Sorteo */
+.sorteo-section {
+  max-width: 600px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.sorteo-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.btn-volver {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.sorteo-titulo {
+  color: white;
+  font-size: 1.5rem;
+}
+
+.sorteo-progreso-header {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+.premio-container {
+  margin: 40px 0;
+}
+
+.premio-card {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  display: inline-block;
+}
+
+.premio-imagen {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  margin-bottom: 15px;
+}
+
+.premio-nombre {
+  color: #333;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.premio-contador {
+  color: #666;
+  font-size: 1rem;
+}
+
+.sorteo-completado {
+  background: rgba(46, 204, 113, 0.2);
+  border-radius: 20px;
+  padding: 40px;
+  margin: 40px 0;
+}
+
+.sorteo-completado h3 {
+  color: #2ecc71;
+  font-size: 2rem;
+}
+
+.sorteo-completado p {
+  color: white;
+  margin-top: 10px;
+}
+
+.sorteo-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.btn-sortear {
+  background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%);
+  color: white;
+  border: 3px solid #ffca28;
+  padding: 20px 60px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 20px rgba(198, 40, 40, 0.5);
+}
+
+.btn-sortear:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.btn-sortear:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-reset-sorteo {
+  background: transparent;
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Animación */
+.animacion-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+}
+
+.containerResultado {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .containerGanador {
   background-color: #1d35cf;
   padding: 15px 30px;
-  width: 600px;
+  width: 500px;
   height: 60px;
   border-radius: 50px;
   border: 5px solid rgb(80, 43, 201);
-  margin-top: -20px;
   overflow: hidden;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-  color: white;
 }
 
 .names-container {
   display: flex;
-  margin-top: 18px;
   flex-direction: column;
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  transition: transform 0.1s ease;
+  margin-top: 18px;
 }
 
 .name-item {
@@ -652,12 +889,6 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  padding: 0 10px;
-  box-sizing: border-box;
 }
 
 .blur-overlay {
@@ -669,129 +900,118 @@ onMounted(() => {
   backdrop-filter: blur(5px);
 }
 
-.blur-overlay.top {
-  top: 0;
-}
+.blur-overlay.top { top: 0; }
+.blur-overlay.bottom { bottom: 0; }
 
-.blur-overlay.bottom {
-  bottom: 0;
-}
-
-.winner-item {
+.animacion-logo {
+  max-width: 200px;
+  height: auto;
   margin-bottom: 20px;
-  text-align: center;
 }
 
-.winner-position {
-  font-size: 24px;
-  font-weight: bold;
-  color: #ff6b35;
-  margin-bottom: 5px;
+.animacion-genio {
+  max-width: 150px;
+  height: auto;
+  margin-top: 20px;
 }
 
-.congrats-text {
-  font-size: 48px;
-  margin-bottom: 30px;
-  font-weight: bold;
-  color: #ff0000;
-  text-align: center;
-  margin-top: 30px;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.containerResultado {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding-top: 0px;
-}
-
-.newGanador {
-  width: 100%;
-  display: flex;
-  margin-top: 30px;
-  justify-content: center;
-}
-
-.newGanadorB {
-  border-radius: 15px;
-  background-color: rgb(22, 31, 198);
-  color: #ffffff;
-  font-size: 18px;
-  padding: 12px 24px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.newGanadorB:hover {
-  background-color: #e60000;
-  transform: scale(1.05);
-}
-
+/* Modal Ganador */
 .dialog-content {
   text-align: center;
 }
 
-.dialog-text {
-  font-size: 22px;
+.winner-premio {
+  margin-bottom: 20px;
+}
+
+.winner-premio-img {
+  width: 150px;
+  height: 150px;
+  object-fit: contain;
+}
+
+.winner-premio h3 {
   color: #333;
-  margin: 15px 0;
-  font-weight: 400;
+  margin-top: 10px;
 }
 
-.el-overlay-dialog {
-  z-index: 200 !important;
+.winner-info {
+  margin-top: 20px;
 }
 
-  @media screen and (max-width: 768px) {
-    .button-container {
-      flex-direction: column;
-      gap: 15px;
-    }
-    
-    .ganadorB {
-      width: 90%;
-      padding: 15px 30px;
-      font-size: 24px;
-    }
+.winner-codigo {
+  background: #f0f0f0;
+  display: inline-block;
+  padding: 5px 15px;
+  border-radius: 20px;
+  color: #666;
+  font-size: 0.9rem;
+}
 
-    .config-panel {
-      margin: 20px 10px;
-      padding: 20px;
-    }
-    
-         .config-actions {
-       flex-direction: column;
-       gap: 10px;
-     }
-     
-     .modal-footer-buttons {
-       flex-direction: column;
-       gap: 10px;
-     }
-    
-    .modal-footer-buttons {
-      flex-direction: column;
-      gap: 10px;
-    }
+.winner-nombre {
+  font-size: 2rem;
+  color: #333;
+  margin-top: 15px;
+}
 
-    .containerGanador {
-      width: 80%;
-      margin-top: -30px;
-    }
+.congrats-text {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #f5576c;
+  text-align: center;
+  margin-top: 20px;
+}
 
-    .congrats-text {
-      font-size: 36px;
-    }
+.modal-footer-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
 
-    .dialog-text {
-      font-size: 16px;
-    }
-    
-    .winner-position {
-      font-size: 20px;
-    }
+.btn-modal-volver {
+  background: #95a5a6;
+  color: white;
+}
+
+.btn-modal-siguiente {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+}
+
+/* Historial */
+.historial-filtros {
+  margin-bottom: 20px;
+}
+
+.filtro-select {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .main-title {
+    font-size: 1.8rem;
   }
+
+  .sorteo-btn {
+    width: 100px;
+    height: 80px;
+  }
+
+  .sorteo-id {
+    font-size: 1.4rem;
+  }
+
+  .premio-imagen {
+    width: 150px;
+    height: 150px;
+  }
+
+  .containerGanador {
+    width: 90%;
+  }
+}
 </style>

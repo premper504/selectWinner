@@ -1,0 +1,64 @@
+{
+  "s1": {
+    "tipo": "small",
+    "numero": 1,
+    "nombre": "Sorteo Pequeño 1",
+    "total": 7,
+    "premios": [
+      { "nombre": "Celular", "cantidad": 4, "imagen": "/premios/celular.png" },
+      { "nombre": "ECHO DOT (PARLANTE)", "cantidad": 3, "imagen": "/premios/echo.png" }
+    ]
+  },
+  "s2": {
+    "tipo": "small",
+    "numero": 2,
+    "nombre": "Sorteo Pequeño 2",
+    "total": 7,
+    "premios": [
+      { "nombre": "Celular", "cantidad": 4, "imagen": "/premios/celular.png" },
+      { "nombre": "ECHO DOT (PARLANTE)", "cantidad": 3, "imagen": "/premios/echo.png" }
+    ]
+  },
+  "s3": {
+    "tipo": "small",
+    "numero": 3,
+    "nombre": "Sorteo Pequeño 3",
+    "total": 8,
+    "premios": [
+      { "nombre": "Celular", "cantidad": 4, "imagen": "/premios/celular.png" },
+      { "nombre": "ECHO DOT (PARLANTE)", "cantidad": 4, "imagen": "/premios/echo.png" }
+    ]
+  },
+  "b1": {
+    "tipo": "big",
+    "numero": 1,
+    "nombre": "Sorteo Grande 1",
+    "total": 3,
+    "premios": [
+      { "nombre": "TELEVISOR 50 PULGADAS", "cantidad": 2, "imagen": "/premios/tv.png" },
+      { "nombre": "MOTO HONDA CG110 (TRABAJO)", "cantidad": 1, "imagen": "/premios/moto-honda.png", "ultimo": true }
+    ]
+  },
+  "b2": {
+    "tipo": "big",
+    "numero": 2,
+    "nombre": "Sorteo Grande 2",
+    "total": 4,
+    "premios": [
+      { "nombre": "TELEVISOR 50 PULGADAS", "cantidad": 2, "imagen": "/premios/tv.png" },
+      { "nombre": "PREMIO L. 1500", "cantidad": 1, "imagen": "/premios/premio-1500.png" },
+      { "nombre": "MOTO PEQUEÑA NAVI", "cantidad": 1, "imagen": "/premios/moto-navi.png", "ultimo": true }
+    ]
+  },
+  "b3": {
+    "tipo": "big",
+    "numero": 3,
+    "nombre": "Sorteo Grande 3",
+    "total": 4,
+    "premios": [
+      { "nombre": "TELEVISOR 50 PULGADAS", "cantidad": 2, "imagen": "/premios/tv.png" },
+      { "nombre": "PREMIO L. 1500", "cantidad": 1, "imagen": "/premios/premio-1500.png" },
+      { "nombre": "MOTO HONDA CG110 (TRABAJO)", "cantidad": 1, "imagen": "/premios/moto-honda.png", "ultimo": true }
+    ]
+  }
+}
