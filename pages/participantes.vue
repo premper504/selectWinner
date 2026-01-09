@@ -11,7 +11,7 @@
           <div class="header-right">
             <!-- Cuadro de registros -->
             <div>
-              <span><b>Participantes: </b></span> {{ totalRecords }}
+              <span><b>Participantes Activos: </b></span> {{ participantesActivos }}
             </div>
   
             <!-- Filtro de fecha -->
@@ -47,29 +47,63 @@
           height="68vh"
           :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
         >
-          <el-table-column label="#" width="50" fixed="left">
+          <el-table-column label="#" width="60" fixed="left">
             <template #default="scope">
               {{ (page - 1) * pageSize + scope.$index + 1 }}
             </template>
           </el-table-column>
-  
-          
-          <!-- Columna para la fecha con slot para formatear -->
-       
-          <el-table-column prop="name" label="Nombre" width="300" />
-          <el-table-column prop="dni" label="Identidad" width="200" />
-          <el-table-column prop="phone" label="Teléfono" width="150" />
-          <el-table-column prop="email" label="Email" width="300" />
-          <el-table-column prop="state" label="Departamento" width="150" />
-          <el-table-column prop="place" label="Lugar de Compra" width="200" />
-          <el-table-column prop="reciepCode" label="Código" width="150" />
+
+          <el-table-column prop="name" label="Nombre" min-width="250" />
+          <el-table-column prop="reciepCode" label="Número Factura" width="150" />
           <el-table-column prop="product" label="Producto" width="200" />
-          <el-table-column prop="created_at" label="Fecha Registro" width="180">
+          <el-table-column label="Imagen" width="120">
+            <template #default="scope">
+              <img
+                v-if="scope.row.url"
+                :src="scope.row.url"
+                class="foto-thumbnail"
+                @click="abrirFoto(scope.row.url)"
+              />
+              <span v-else>-</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="Participa" width="100">
+            <template #default="scope">
+              <el-switch
+                v-model="scope.row.participando"
+                @change="toggleParticipa(scope.row)"
+              />
+            </template>
+          </el-table-column>
+          <el-table-column label="Ganador" width="100">
+            <template #default="scope">
+              <el-tag v-if="scope.row.winner" type="success">Sí</el-tag>
+              <el-tag v-else type="info">No</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="dni" label="Identidad" width="150" />
+          <el-table-column prop="phone" label="Teléfono" width="130" />
+          <el-table-column prop="created_at" label="Fecha" width="140">
             <template #default="scope">
               {{ formatDate(scope.row.created_at) }}
             </template>
           </el-table-column>
+          <el-table-column label="Acciones" width="100" fixed="right">
+            <template #default="scope">
+              <el-button
+                type="danger"
+                size="small"
+                @click="eliminarRegistro(scope.row)"
+                :icon="Delete"
+              />
+            </template>
+          </el-table-column>
         </el-table>
+
+        <!-- Modal para ver foto grande -->
+        <el-dialog v-model="showFotoModal" title="Foto" width="90%">
+          <img :src="fotoSeleccionada" class="foto-grande" />
+        </el-dialog>
   
         <!-- Paginación -->
         <el-pagination
@@ -94,9 +128,10 @@
   </template>
   
   <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, onMounted, onUnmounted } from 'vue'
   import { useNuxtApp } from '#app'
-  import { ElMessage, ElLoading } from 'element-plus'
+  import { ElMessage, ElLoading, ElMessageBox } from 'element-plus'
+  import { Delete } from '@element-plus/icons-vue'
   import Papa from 'papaparse'  // Para generar el CSV
   
   // Definir el nombre de la tabla como una constante
@@ -123,7 +158,71 @@
   const isLoading = ref(true)
   const isDownloading = ref(false)
   const dateRange = ref([])
-  
+  const participantesActivos = ref(0)
+  const showFotoModal = ref(false)
+  const fotoSeleccionada = ref('')
+
+  // Función para abrir foto en modal
+  const abrirFoto = (url) => {
+    fotoSeleccionada.value = url
+    showFotoModal.value = true
+  }
+
+  // Función para toggle de participa
+  const toggleParticipa = async (row) => {
+    try {
+      const { error } = await $supabase
+        .from(PARTICIPANTS_TABLE)
+        .update({ participando: row.participando })
+        .eq('id', row.id)
+
+      if (error) throw error
+      ElMessage.success('Actualizado correctamente')
+      await actualizarContador()
+    } catch (err) {
+      console.error('Error al actualizar:', err)
+      ElMessage.error('Error al actualizar')
+      row.participando = !row.participando
+    }
+  }
+
+  // Función para actualizar contador de participantes activos
+  const actualizarContador = async () => {
+    const { count: activos } = await $supabase
+      .from(PARTICIPANTS_TABLE)
+      .select('*', { count: 'exact', head: true })
+      .eq('year', 2026)
+      .eq('participando', true)
+    participantesActivos.value = activos || 0
+  }
+
+  // Función para eliminar registro
+  const eliminarRegistro = async (row) => {
+    try {
+      await ElMessageBox.confirm(
+        '¿Seguro que deseas eliminar este participante? Esta acción No se puede deshacer.',
+        'Confirmar eliminación',
+        { confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar', type: 'warning' }
+      )
+
+      const { error } = await $supabase
+        .from(PARTICIPANTS_TABLE)
+        .delete()
+        .eq('id', row.id)
+
+      if (error) throw error
+
+      ElMessage.success('Registro eliminado')
+      await actualizarContador()
+      fetchWinners(page.value)
+    } catch (err) {
+      if (err !== 'cancel') {
+        console.error('Error al eliminar:', err)
+        ElMessage.error('Error al eliminar')
+      }
+    }
+  }
+
   // Función para obtener los datos con paginación y filtro de fecha
   const fetchWinners = async (page = 1) => {
     isLoading.value = true
@@ -131,8 +230,9 @@
       let query = $supabase
         .from(PARTICIPANTS_TABLE)
         .select(`*`, { count: 'exact' })
+        .eq('year', 2026)
         .order('created_at', { ascending: false })
-  
+
       // Aplicar filtro de fecha si está establecido
       if (dateRange.value && dateRange.value.length === 2) {
         query = query
@@ -148,7 +248,16 @@
         ElMessage.error('Error al obtener los datos')
       } else {
         winners.value = data
-        totalRecords.value = count  // Número total de registros
+        totalRecords.value = count
+
+        // Contar participantes activos (participando = true, year = 2026)
+        const { count: activos } = await $supabase
+          .from(PARTICIPANTS_TABLE)
+          .select('*', { count: 'exact', head: true })
+          .eq('year', 2026)
+          .eq('participando', true)
+
+        participantesActivos.value = activos || 0
       }
     } catch (err) {
       console.error('Error in fetchWinners:', err)
@@ -191,15 +300,16 @@
       let query = $supabase
         .from(PARTICIPANTS_TABLE)
         .select(`*`)
+        .eq('year', 2026)
         .order('created_at', { ascending: false })
-  
+
       // Aplicar filtro de fecha si está establecido
       if (dateRange.value && dateRange.value.length === 2) {
         query = query
           .gte('created_at', dateRange.value[0])
           .lte('created_at', `${dateRange.value[1]}T23:59:59`)
       }
-  
+
       const { data, error } = await query
   
       if (error) {
@@ -227,8 +337,36 @@
     }
   }
   
+  // Variable para guardar la suscripción
+  let realtimeSubscription = null
+
   onMounted(() => {
     fetchWinners() // Cargar datos iniciales
+
+    // Suscripción realtime para nuevos participantes
+    realtimeSubscription = $supabase
+      .channel('participantes-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // INSERT, UPDATE, DELETE
+          schema: 'public',
+          table: PARTICIPANTS_TABLE
+        },
+        (payload) => {
+          console.log('Cambio detectado:', payload)
+          // Recargar datos y actualizar contador
+          fetchWinners(page.value)
+        }
+      )
+      .subscribe()
+  })
+
+  onUnmounted(() => {
+    // Limpiar suscripción al desmontar
+    if (realtimeSubscription) {
+      $supabase.removeChannel(realtimeSubscription)
+    }
   })
   </script>
   
@@ -257,8 +395,27 @@
   }
   
   .maxwidth {
-    max-width: 1200px;
+    max-width: 1600px;
     margin: auto;
+  }
+
+  .foto-thumbnail {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+
+  .foto-thumbnail:hover {
+    transform: scale(1.1);
+  }
+
+  .foto-grande {
+    width: 100%;
+    max-height: 100vh;
+    object-fit: contain;
   }
   
   .header-container {

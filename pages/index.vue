@@ -48,7 +48,7 @@
     <section class="sorteo-section" v-if="currentScreen === 'sorteo'">
       <div class="sorteo-header">
         <button class="btn-volver" @click="volverAlSelector">← Volver</button>
-        <h2 class="sorteo-titulo">Sorteo {{ sorteoSeleccionado?.toUpperCase() }}</h2>
+        <img src="/assets/images/tituloceteco.png" alt="Ceteco" class="sorteo-logo" />
         <span class="sorteo-progreso-header">{{ progresoActual }}/{{ sorteoActual?.total }}</span>
       </div>
 
@@ -59,6 +59,7 @@
           <h3 class="premio-nombre">{{ premioActual.nombre }}</h3>
           <p class="premio-contador">Premio {{ premioActualNumero }} de {{ premioActual.cantidad }}</p>
         </div>
+        <img src="/assets/images/genio.png" alt="Genio" class="genio-flotante" />
       </div>
 
       <!-- Mensaje si ya se completó -->
@@ -75,11 +76,16 @@
           :disabled="!premioActual || isSpinning"
           v-if="premioActual"
         >
-          🎰 SORTEAR
+          SORTEAR
         </button>
-        <button class="btn-reset-sorteo" @click="confirmResetSorteo">
-          Reset {{ sorteoSeleccionado?.toUpperCase() }}
-        </button>
+        <div class="sorteo-btns-secondary">
+          <button class="btn-ganadores-sorteo" @click="verGanadoresSorteo">
+            Ganadores
+          </button>
+          <button class="btn-reset-sorteo" @click="confirmResetSorteo">
+            Reset {{ sorteoSeleccionado?.toUpperCase() }}
+          </button>
+        </div>
       </div>
     </section>
 
@@ -304,8 +310,9 @@ const cargarParticipantes = async () => {
     const { data, error } = await $supabase
       .from(PARTICIPANTS_TABLE)
       .select("*")
-      .or("winner.is.null,winner.eq.false")
-      .limit(900);
+      .eq("winner", false)
+      .eq("participando", true)
+      .eq("year", 2026);
 
     if (error) throw error;
 
@@ -419,13 +426,25 @@ const guardarGanador = async (winner) => {
 
     if (errorSorteo) throw errorSorteo;
 
-    // Actualizar participante
+    // Actualizar participante ganador
     const { error: errorParticipante } = await $supabase
       .from(PARTICIPANTS_TABLE)
       .update({ winner: true, codwinner: codigo })
       .eq("id", winner.id);
 
     if (errorParticipante) throw errorParticipante;
+
+    // Marcar TODOS los registros con el mismo DNI como no participando
+    // (una persona solo puede ganar una vez, aunque tenga múltiples compras)
+    if (winner.dni) {
+      const { error: errorDni } = await $supabase
+        .from(PARTICIPANTS_TABLE)
+        .update({ participando: false })
+        .eq("dni", winner.dni)
+        .eq("year", 2026);
+
+      if (errorDni) throw errorDni;
+    }
 
     // Actualizar estado local
     ganadorActual.value = winner;
@@ -474,6 +493,13 @@ const siguienteSorteo = async () => {
 
 const verHistorial = async () => {
   await cargarHistorial();
+  historialFiltro.value = "";
+  showHistorial.value = true;
+};
+
+const verGanadoresSorteo = async () => {
+  await cargarHistorial();
+  historialFiltro.value = sorteoSeleccionado.value;
   showHistorial.value = true;
 };
 
@@ -486,15 +512,34 @@ const confirmResetSorteo = () => {
 
 const resetSorteo = async (sorteoId) => {
   try {
-    // Obtener participantes de este sorteo
+    // Obtener participantes de este sorteo con su DNI
     const { data: ganadores } = await $supabase
       .from(SORTEOS_TABLE)
       .select("participante_id")
       .eq("sorteo_id", sorteoId);
 
     if (ganadores?.length) {
-      // Resetear participantes
       const ids = ganadores.map(g => g.participante_id);
+
+      // Obtener los DNIs de los ganadores
+      const { data: participantesGanadores } = await $supabase
+        .from(PARTICIPANTS_TABLE)
+        .select("dni")
+        .in("id", ids);
+
+      // Obtener DNIs únicos
+      const dnis = [...new Set(participantesGanadores?.map(p => p.dni).filter(Boolean))];
+
+      // Reactivar TODOS los registros con esos DNIs (participando = true)
+      if (dnis.length) {
+        await $supabase
+          .from(PARTICIPANTS_TABLE)
+          .update({ participando: true })
+          .in("dni", dnis)
+          .eq("year", 2026);
+      }
+
+      // Resetear los registros ganadores (winner = false)
       await $supabase
         .from(PARTICIPANTS_TABLE)
         .update({ winner: false, codwinner: null })
@@ -611,7 +656,11 @@ onMounted(() => {
 <style scoped>
 .main-body {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background:
+    url('/assets/images/redbg.svg') center top no-repeat,
+    linear-gradient(180deg, #ff9600 0%, #ffc900 50%, #ff9600 100%);
+  background-size: 100% auto, 100% 100%;
+  background-position: center 550%, top center;
   padding: 20px;
 }
 
@@ -755,6 +804,11 @@ onMounted(() => {
   font-size: 1.5rem;
 }
 
+.sorteo-logo {
+  max-width: 200px;
+  height: auto;
+}
+
 .sorteo-progreso-header {
   background: rgba(255, 255, 255, 0.2);
   color: white;
@@ -765,6 +819,27 @@ onMounted(() => {
 
 .premio-container {
   margin: 40px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  position: relative;
+  margin-left: 200px;
+}
+
+.genio-flotante {
+  max-width: 200px;
+  height: auto;
+  animation: flotar 3s ease-in-out infinite;
+}
+
+@keyframes flotar {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
 }
 
 .premio-card {
@@ -817,16 +892,17 @@ onMounted(() => {
 }
 
 .btn-sortear {
-  background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%);
+  background: linear-gradient(135deg, #e60808 0%, #c62828 100%);
   color: white;
-  border: 3px solid #ffca28;
+  border: 3px solid #ff3333;
   padding: 20px 60px;
   font-size: 1.5rem;
   font-weight: bold;
   border-radius: 50px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 6px 20px rgba(198, 40, 40, 0.5);
+  box-shadow: 0 6px 20px rgba(230, 8, 8, 0.5);
+  margin-bottom: 50px;
 }
 
 .btn-sortear:hover:not(:disabled) {
@@ -836,6 +912,27 @@ onMounted(() => {
 .btn-sortear:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.sorteo-btns-secondary {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.btn-ganadores-sorteo {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-ganadores-sorteo:hover {
+  background: #2980b9;
+  transform: scale(1.05);
 }
 
 .btn-reset-sorteo {
