@@ -58,11 +58,21 @@
           <el-table-column prop="product" label="Producto" width="200" />
           <el-table-column label="Imagen" width="120">
             <template #default="scope">
+              <!-- Mostrar error si la imagen no se pudo cargar -->
+              <span v-if="imageErrors[scope.row.id]" class="image-error" title="Imagen no disponible">
+                <el-icon><Picture /></el-icon>
+              </span>
+              <!-- Mostrar loading mientras se convierte HEIC -->
+              <span v-else-if="imageLoading[scope.row.id]" class="image-loading">
+                <el-icon class="is-loading"><Loading /></el-icon>
+              </span>
+              <!-- Mostrar imagen normal o convertida -->
               <img
-                v-if="scope.row.url"
-                :src="scope.row.url"
+                v-else-if="getImageUrl(scope.row)"
+                :src="getImageUrl(scope.row)"
                 class="foto-thumbnail"
-                @click="abrirFoto(scope.row.url)"
+                @click="abrirFoto(scope.row)"
+                @error="handleImageError(scope.row)"
               />
               <span v-else>-</span>
             </template>
@@ -107,7 +117,7 @@
   
         <!-- Paginación -->
         <el-pagination
-          v-if="totalRecords > pageSize"
+          v-if="totalRecords > 0"
           @current-change="handlePageChange"
           :current-page="page"
           :page-size="pageSize"
@@ -131,7 +141,7 @@
   import { ref, onMounted, onUnmounted } from 'vue'
   import { useNuxtApp } from '#app'
   import { ElMessage, ElLoading, ElMessageBox } from 'element-plus'
-  import { Delete } from '@element-plus/icons-vue'
+  import { Delete, Picture, Loading } from '@element-plus/icons-vue'
   import Papa from 'papaparse'  // Para generar el CSV
   
   // Definir el nombre de la tabla como una constante
@@ -162,9 +172,89 @@
   const showFotoModal = ref(false)
   const fotoSeleccionada = ref('')
 
+  // Caché para URLs de imágenes convertidas
+  const imageCache = ref({})
+  const imageErrors = ref({})
+  const imageLoading = ref({})
+
+  // Verificar si la URL es de un archivo HEIC
+  const isHeicFile = (url) => {
+    if (!url) return false
+    const lowerUrl = url.toLowerCase()
+    return lowerUrl.includes('.heic') || lowerUrl.includes('.heif')
+  }
+
+  // Convertir HEIC a JPEG (importación dinámica para evitar problemas SSR)
+  const convertHeicToJpeg = async (url) => {
+    try {
+      // Importar heic2any dinámicamente solo en el cliente
+      const heic2any = (await import('heic2any')).default
+      const response = await fetch(url)
+      const blob = await response.blob()
+      const convertedBlob = await heic2any({
+        blob,
+        toType: 'image/jpeg',
+        quality: 0.8
+      })
+      // heic2any puede devolver un array o un solo blob
+      const resultBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
+      return URL.createObjectURL(resultBlob)
+    } catch (error) {
+      console.error('Error convirtiendo HEIC:', error)
+      return null
+    }
+  }
+
+  // Obtener URL de imagen procesada (con conversión si es necesario)
+  const getImageUrl = (row) => {
+    if (!row.url) return null
+    // Si ya está en caché, retornar la URL cacheada
+    if (imageCache.value[row.id]) {
+      return imageCache.value[row.id]
+    }
+    // Si no es HEIC, usar la URL original
+    if (!isHeicFile(row.url)) {
+      return row.url
+    }
+    // Si es HEIC y no está en caché, iniciar conversión
+    if (!imageLoading.value[row.id]) {
+      imageLoading.value[row.id] = true
+      convertHeicToJpeg(row.url).then((convertedUrl) => {
+        if (convertedUrl) {
+          imageCache.value[row.id] = convertedUrl
+        } else {
+          imageErrors.value[row.id] = true
+        }
+        imageLoading.value[row.id] = false
+      })
+    }
+    return null // Mostrar placeholder mientras carga
+  }
+
+  // Manejar error de carga de imagen
+  const handleImageError = (row) => {
+    imageErrors.value[row.id] = true
+  }
+
   // Función para abrir foto en modal
-  const abrirFoto = (url) => {
-    fotoSeleccionada.value = url
+  const abrirFoto = async (row) => {
+    // Si es HEIC y ya está convertida, usar la versión convertida
+    if (imageCache.value[row.id]) {
+      fotoSeleccionada.value = imageCache.value[row.id]
+    } else if (isHeicFile(row.url)) {
+      // Convertir para el modal si es HEIC
+      ElMessage.info('Convirtiendo imagen...')
+      const convertedUrl = await convertHeicToJpeg(row.url)
+      if (convertedUrl) {
+        imageCache.value[row.id] = convertedUrl
+        fotoSeleccionada.value = convertedUrl
+      } else {
+        ElMessage.error('No se pudo abrir la imagen')
+        return
+      }
+    } else {
+      fotoSeleccionada.value = row.url
+    }
     showFotoModal.value = true
   }
 
@@ -205,12 +295,18 @@
         { confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar', type: 'warning' }
       )
 
-      const { error } = await $supabase
+      const { error, data } = await $supabase
         .from(PARTICIPANTS_TABLE)
         .delete()
         .eq('id', row.id)
+        .select()
 
       if (error) throw error
+
+      if (!data || data.length === 0) {
+        ElMessage.warning('No se pudo eliminar. Verifica permisos en Supabase.')
+        return
+      }
 
       ElMessage.success('Registro eliminado')
       await actualizarContador()
@@ -410,6 +506,43 @@
 
   .foto-thumbnail:hover {
     transform: scale(1.1);
+  }
+
+  .image-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    color: #909399;
+    font-size: 24px;
+  }
+
+  .image-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    color: #409eff;
+    font-size: 24px;
+  }
+
+  .is-loading {
+    animation: rotate 1s linear infinite;
+  }
+
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   .foto-grande {
