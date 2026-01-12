@@ -34,11 +34,17 @@
 
         <!-- Botones de acción -->
         <div class="action-buttons">
+          <button class="btn-participantes" @click="navigateTo('/participantes')">
+            👥 Participantes
+          </button>
           <button class="btn-historial" @click="verHistorial">
             📋 Ver Ganadores
           </button>
           <button class="btn-reset-all" @click="confirmResetAll">
             🔄 Reset Todo
+          </button>
+          <button class="btn-logout" @click="handleLogout">
+            🚪 Salir
           </button>
         </div>
       </div>
@@ -497,6 +503,11 @@ const verHistorial = async () => {
   showHistorial.value = true;
 };
 
+const handleLogout = () => {
+  localStorage.removeItem('tombola_auth');
+  navigateTo('/login');
+};
+
 const verGanadoresSorteo = async () => {
   await cargarHistorial();
   historialFiltro.value = sorteoSeleccionado.value;
@@ -753,13 +764,18 @@ onMounted(() => {
   gap: 20px;
 }
 
-.btn-historial, .btn-reset-all {
+.btn-participantes, .btn-historial, .btn-reset-all, .btn-logout {
   padding: 15px 30px;
   border: none;
   border-radius: 10px;
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
+}
+
+.btn-participantes {
+  background: #9b59b6;
+  color: white;
 }
 
 .btn-historial {
@@ -772,7 +788,12 @@ onMounted(() => {
   color: white;
 }
 
-.btn-historial:hover, .btn-reset-all:hover {
+.btn-logout {
+  background: #95a5a6;
+  color: white;
+}
+
+.btn-participantes:hover, .btn-historial:hover, .btn-reset-all:hover, .btn-logout:hover {
   transform: scale(1.05);
 }
 
