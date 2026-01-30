@@ -46,7 +46,7 @@
     "total": 4,
     "premios": [
       { "nombre": "TELEVISOR 50 PULGADAS", "cantidad": 2, "imagen": "/premios/tv.png" },
-      { "nombre": "PREMIO L. 1500", "cantidad": 1, "imagen": "/premios/premio-1500.png" },
+      { "nombre": "PREMIO L. 15,000", "cantidad": 1, "imagen": "/premios/premio-1500.png" },
       { "nombre": "MOTO PEQUEÑA NAVI", "cantidad": 1, "imagen": "/premios/moto-navi.png", "ultimo": true }
     ]
   },
@@ -57,7 +57,7 @@
     "total": 4,
     "premios": [
       { "nombre": "TELEVISOR 50 PULGADAS", "cantidad": 2, "imagen": "/premios/tv.png" },
-      { "nombre": "PREMIO L. 1500", "cantidad": 1, "imagen": "/premios/premio-1500.png" },
+      { "nombre": "PREMIO L. 15,000", "cantidad": 1, "imagen": "/premios/premio-1500.png" },
       { "nombre": "MOTO HONDA CG110 (TRABAJO)", "cantidad": 1, "imagen": "/premios/moto-honda.png", "ultimo": true }
     ]
   }
