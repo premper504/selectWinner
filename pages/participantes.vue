@@ -58,21 +58,28 @@
           <el-table-column prop="product" label="Producto" width="200" />
           <el-table-column label="Imagen" width="120">
             <template #default="scope">
-              <!-- Mostrar error si la imagen no se pudo cargar -->
+              <!-- Error de imagen -->
               <span v-if="imageErrors[scope.row.id]" class="image-error" title="Imagen no disponible">
                 <el-icon><Picture /></el-icon>
               </span>
-              <!-- Mostrar loading mientras se convierte HEIC -->
-              <span v-else-if="imageLoading[scope.row.id]" class="image-loading">
-                <el-icon class="is-loading"><Loading /></el-icon>
+              <!-- HEIC: placeholder (click para ver en modal) -->
+              <span
+                v-else-if="isHeicFile(scope.row.url)"
+                class="heic-placeholder"
+                @click="abrirFoto(scope.row)"
+                title="Click para ver"
+              >
+                <el-icon><Picture /></el-icon>
+                <small>HEIC</small>
               </span>
-              <!-- Mostrar imagen normal o convertida -->
+              <!-- Imagen normal -->
               <img
-                v-else-if="getImageUrl(scope.row)"
-                :src="getImageUrl(scope.row)"
+                v-else-if="scope.row.url"
+                :src="scope.row.url"
                 class="foto-thumbnail"
                 @click="abrirFoto(scope.row)"
                 @error="handleImageError(scope.row)"
+                loading="lazy"
               />
               <span v-else>-</span>
             </template>
@@ -116,18 +123,18 @@
         </el-dialog>
   
         <!-- Paginación -->
-        <el-pagination
-          v-if="totalRecords > 0"
-          @current-change="handlePageChange"
-          :current-page="page"
-          :page-size="pageSize"
-          :total="totalRecords"
-          layout="total, sizes, prev, pager, next"
-          :page-sizes="[50, 100, 200]"
-          @size-change="handleSizeChange"
-          style="margin-top: 20px;"
-        >
-        </el-pagination>
+        <div class="pagination-container" v-if="totalRecords > 0">
+          <el-pagination
+            background
+            @current-change="handlePageChange"
+            :current-page="page"
+            :page-size="pageSize"
+            :total="totalRecords"
+            layout="total, sizes, prev, pager, next, jumper"
+            :page-sizes="[50, 100, 200]"
+            @size-change="handleSizeChange"
+          />
+        </div>
   
         <!-- Mostrar mensaje cuando no hay datos -->
         <div v-if="winners.length === 0 && !isLoading" class="no-data">
@@ -172,10 +179,10 @@
   const showFotoModal = ref(false)
   const fotoSeleccionada = ref('')
 
-  // Caché para URLs de imágenes convertidas
+  // Caché para URLs de imágenes convertidas y errores
   const imageCache = ref({})
   const imageErrors = ref({})
-  const imageLoading = ref({})
+  const convertingImage = ref(false)
 
   // Verificar si la URL es de un archivo HEIC
   const isHeicFile = (url) => {
@@ -184,51 +191,23 @@
     return lowerUrl.includes('.heic') || lowerUrl.includes('.heif')
   }
 
-  // Convertir HEIC a JPEG (importación dinámica para evitar problemas SSR)
+  // Convertir HEIC a JPEG (solo cuando el usuario lo solicita)
   const convertHeicToJpeg = async (url) => {
     try {
-      // Importar heic2any dinámicamente solo en el cliente
       const heic2any = (await import('heic2any')).default
       const response = await fetch(url)
       const blob = await response.blob()
       const convertedBlob = await heic2any({
         blob,
         toType: 'image/jpeg',
-        quality: 0.8
+        quality: 0.7
       })
-      // heic2any puede devolver un array o un solo blob
       const resultBlob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
       return URL.createObjectURL(resultBlob)
     } catch (error) {
       console.error('Error convirtiendo HEIC:', error)
       return null
     }
-  }
-
-  // Obtener URL de imagen procesada (con conversión si es necesario)
-  const getImageUrl = (row) => {
-    if (!row.url) return null
-    // Si ya está en caché, retornar la URL cacheada
-    if (imageCache.value[row.id]) {
-      return imageCache.value[row.id]
-    }
-    // Si no es HEIC, usar la URL original
-    if (!isHeicFile(row.url)) {
-      return row.url
-    }
-    // Si es HEIC y no está en caché, iniciar conversión
-    if (!imageLoading.value[row.id]) {
-      imageLoading.value[row.id] = true
-      convertHeicToJpeg(row.url).then((convertedUrl) => {
-        if (convertedUrl) {
-          imageCache.value[row.id] = convertedUrl
-        } else {
-          imageErrors.value[row.id] = true
-        }
-        imageLoading.value[row.id] = false
-      })
-    }
-    return null // Mostrar placeholder mientras carga
   }
 
   // Manejar error de carga de imagen
@@ -238,23 +217,41 @@
 
   // Función para abrir foto en modal
   const abrirFoto = async (row) => {
-    // Si es HEIC y ya está convertida, usar la versión convertida
+    if (!row.url) return
+
+    // Si ya está en caché, usar directamente
     if (imageCache.value[row.id]) {
       fotoSeleccionada.value = imageCache.value[row.id]
-    } else if (isHeicFile(row.url)) {
-      // Convertir para el modal si es HEIC
-      ElMessage.info('Convirtiendo imagen...')
-      const convertedUrl = await convertHeicToJpeg(row.url)
-      if (convertedUrl) {
-        imageCache.value[row.id] = convertedUrl
-        fotoSeleccionada.value = convertedUrl
-      } else {
-        ElMessage.error('No se pudo abrir la imagen')
+      showFotoModal.value = true
+      return
+    }
+
+    // Si es HEIC, convertir primero
+    if (isHeicFile(row.url)) {
+      if (convertingImage.value) {
+        ElMessage.warning('Ya hay una imagen convirtiéndose, espera...')
         return
       }
-    } else {
-      fotoSeleccionada.value = row.url
+      convertingImage.value = true
+      ElMessage.info('Convirtiendo imagen HEIC...')
+
+      try {
+        const convertedUrl = await convertHeicToJpeg(row.url)
+        if (convertedUrl) {
+          imageCache.value[row.id] = convertedUrl
+          fotoSeleccionada.value = convertedUrl
+          showFotoModal.value = true
+        } else {
+          ElMessage.error('No se pudo convertir la imagen')
+        }
+      } finally {
+        convertingImage.value = false
+      }
+      return
     }
+
+    // Imagen normal
+    fotoSeleccionada.value = row.url
     showFotoModal.value = true
   }
 
@@ -310,7 +307,7 @@
 
       ElMessage.success('Registro eliminado')
       await actualizarContador()
-      fetchWinners(page.value)
+      fetchWinners()
     } catch (err) {
       if (err !== 'cancel') {
         console.error('Error al eliminar:', err)
@@ -320,8 +317,9 @@
   }
 
   // Función para obtener los datos con paginación y filtro de fecha
-  const fetchWinners = async (page = 1) => {
+  const fetchWinners = async () => {
     isLoading.value = true
+    const currentPage = page.value
     try {
       let query = $supabase
         .from(PARTICIPANTS_TABLE)
@@ -335,9 +333,9 @@
           .gte('created_at', dateRange.value[0])
           .lte('created_at', `${dateRange.value[1]}T23:59:59`)
       }
-  
+
       const { data, error, count } = await query
-        .range((page - 1) * pageSize.value, page * pageSize.value - 1)
+        .range((currentPage - 1) * pageSize.value, currentPage * pageSize.value - 1)
   
       if (error) {
         console.error('Error fetching winners:', error)
@@ -379,7 +377,7 @@
   // Función para manejar el cambio de página
   const handlePageChange = (newPage) => {
     page.value = newPage
-    fetchWinners(newPage)
+    fetchWinners()
   }
   
   // Función para manejar el cambio de tamaño de página
@@ -452,7 +450,7 @@
         (payload) => {
           console.log('Cambio detectado:', payload)
           // Recargar datos y actualizar contador
-          fetchWinners(page.value)
+          fetchWinners()
         }
       )
       .subscribe()
@@ -520,16 +518,30 @@
     font-size: 24px;
   }
 
-  .image-loading {
+  .heic-placeholder {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     width: 50px;
     height: 50px;
-    background: #f5f5f5;
+    background: #e6f7ff;
+    border: 1px dashed #409eff;
     border-radius: 4px;
     color: #409eff;
-    font-size: 24px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .heic-placeholder:hover {
+    background: #409eff;
+    color: white;
+  }
+
+  .heic-placeholder small {
+    font-size: 8px;
+    margin-top: 2px;
   }
 
   .is-loading {
@@ -537,12 +549,8 @@
   }
 
   @keyframes rotate {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 
   .foto-grande {
@@ -582,6 +590,15 @@
     padding: 20px;
     font-size: 16px;
     color: #909399;
+  }
+
+  .pagination-container {
+    padding: 20px 0;
+    display: flex;
+    justify-content: center;
+    background: #f9f9f9;
+    border-radius: 8px;
+    margin-top: 15px;
   }
   
   @media (max-width: 768px) {
