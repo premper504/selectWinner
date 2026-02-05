@@ -5,155 +5,166 @@
           <img class="logo" src="assets/images/logoCeteco.png" alt="Cumple Deseo" />
         </div>
       </section>
-  
+
       <div class="maxwidth container">
-        <div class="header-container">
-          <div class="header-right">
-            <!-- Cuadro de registros -->
-            <div>
-              <span><b>Participantes Activos: </b></span> {{ participantesActivos }}
+        <ClientOnly>
+          <div class="header-container">
+            <div class="header-right">
+              <!-- Cuadro de registros -->
+              <div>
+                <span><b>Participantes Activos: </b></span> {{ participantesActivos }}
+              </div>
+
+              <!-- Filtro de fecha -->
+              <div class="date-filter">
+                <el-date-picker
+                  v-model="dateRange"
+                  type="daterange"
+                  range-separator="Hasta"
+                  start-placeholder="Fecha inicio"
+                  end-placeholder="Fecha fin"
+                  format="DD/MM/YYYY"
+                  value-format="YYYY-MM-DD"
+                  @change="handleDateChange"
+                />
+                <el-button @click="clearDateFilter" type="info" plain>Limpiar filtro</el-button>
+              </div>
+
+              <!-- Botón para descargar CSV -->
+              <el-button @click="downloadCSV" type="primary" :loading="isDownloading">
+                {{ isDownloading ? 'Descargando...' : 'Descargar CSV' }}
+              </el-button>
             </div>
-  
-            <!-- Filtro de fecha -->
-            <div class="date-filter">
-              <el-date-picker
-                v-model="dateRange"
-                type="daterange"
-                range-separator="Hasta"
-                start-placeholder="Fecha inicio"
-                end-placeholder="Fecha fin"
-                format="DD/MM/YYYY"
-                value-format="YYYY-MM-DD"
-                @change="handleDateChange"
-              />
-              <el-button @click="clearDateFilter" type="info" plain>Limpiar filtro</el-button>
-            </div>
-  
-            <!-- Botón para descargar CSV -->
-            <el-button @click="downloadCSV" type="primary" :loading="isDownloading">
-              {{ isDownloading ? 'Descargando...' : 'Descargar CSV' }}
-            </el-button>
           </div>
-        </div>
-  
-        <!-- Cargador global -->
-        <el-loading v-model:full-screen="isLoading" element-loading-text="Cargando..." :lock-scroll="false" />
-  
-        <!-- Tabla con índice, paginación y encabezado fijo -->
-        <el-table 
-          v-if="winners.length > 0" 
-          :data="winners" 
-          style="width: 100%"
-          height="68vh"
-          :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
-        >
-          <el-table-column label="#" width="60" fixed="left">
-            <template #default="scope">
-              {{ (page - 1) * pageSize + scope.$index + 1 }}
-            </template>
-          </el-table-column>
 
-          <el-table-column prop="name" label="Nombre" min-width="250" />
-          <el-table-column prop="reciepCode" label="Número Factura" width="150" />
-          <el-table-column prop="product" label="Producto" width="200" />
-          <el-table-column label="Imagen" width="120">
-            <template #default="scope">
-              <!-- Error de imagen -->
-              <span v-if="imageErrors[scope.row.id]" class="image-error" title="Imagen no disponible">
-                <el-icon><Picture /></el-icon>
-              </span>
-              <!-- HEIC: placeholder (click para ver en modal) -->
-              <span
-                v-else-if="isHeicFile(scope.row.url)"
-                class="heic-placeholder"
-                @click="abrirFoto(scope.row)"
-                title="Click para ver"
-              >
-                <el-icon><Picture /></el-icon>
-                <small>HEIC</small>
-              </span>
-              <!-- Imagen normal -->
-              <img
-                v-else-if="scope.row.url"
-                :src="scope.row.url"
-                class="foto-thumbnail"
-                @click="abrirFoto(scope.row)"
-                @error="handleImageError(scope.row)"
-                loading="lazy"
-              />
-              <span v-else>-</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="Participa" width="100">
-            <template #default="scope">
-              <el-switch
-                v-model="scope.row.participando"
-                @change="toggleParticipa(scope.row)"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column label="Ganador" width="100">
-            <template #default="scope">
-              <el-tag v-if="scope.row.winner" type="success">Sí</el-tag>
-              <el-tag v-else type="info">No</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="dni" label="Identidad" width="150" />
-          <el-table-column prop="phone" label="Teléfono" width="130" />
-          <el-table-column prop="created_at" label="Fecha" width="140">
-            <template #default="scope">
-              {{ formatDate(scope.row.created_at) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="Acciones" width="100" fixed="right">
-            <template #default="scope">
-              <el-button
-                type="danger"
-                size="small"
-                @click="eliminarRegistro(scope.row)"
-                :icon="Delete"
-              />
-            </template>
-          </el-table-column>
-        </el-table>
+          <!-- Cargador -->
+          <div v-if="isLoading" class="loading-container">
+            <el-icon class="is-loading" :size="32"><Loading /></el-icon>
+            <span>Cargando...</span>
+          </div>
 
-        <!-- Modal para ver foto grande -->
-        <el-dialog v-model="showFotoModal" title="Foto" width="90%">
-          <img :src="fotoSeleccionada" class="foto-grande" />
-        </el-dialog>
-  
-        <!-- Paginación -->
-        <div class="pagination-container" v-if="totalRecords > 0">
-          <el-pagination
-            background
-            v-model:current-page="page"
-            v-model:page-size="pageSize"
-            :total="totalRecords"
-            layout="total, sizes, prev, pager, next, jumper"
-            :page-sizes="[50, 100, 200]"
-            @current-change="handlePageChange"
-            @size-change="handleSizeChange"
-          />
-        </div>
-  
-        <!-- Mostrar mensaje cuando no hay datos -->
-        <div v-if="winners.length === 0 && !isLoading" class="no-data">
-          No hay datos disponibles.
-        </div>
+          <!-- Tabla con índice, paginación y encabezado fijo -->
+          <el-table
+            v-if="winners.length > 0"
+            :data="winners"
+            style="width: 100%"
+            height="68vh"
+            :header-cell-style="{ background: '#f5f7fa', color: '#606266' }"
+          >
+            <el-table-column label="#" width="60" fixed="left">
+              <template #default="scope">
+                {{ (page - 1) * pageSize + scope.$index + 1 }}
+              </template>
+            </el-table-column>
+
+            <el-table-column prop="name" label="Nombre" min-width="250" />
+            <el-table-column prop="reciepCode" label="Número Factura" width="150" />
+            <el-table-column prop="product" label="Producto" width="200" />
+            <el-table-column label="Imagen" width="120">
+              <template #default="scope">
+                <!-- Error de imagen -->
+                <span v-if="imageErrors[scope.row.id]" class="image-error" title="Imagen no disponible">
+                  <el-icon><Picture /></el-icon>
+                </span>
+                <!-- HEIC: placeholder (click para ver en modal) -->
+                <span
+                  v-else-if="isHeicFile(scope.row.url)"
+                  class="heic-placeholder"
+                  @click="abrirFoto(scope.row)"
+                  title="Click para ver"
+                >
+                  <el-icon><Picture /></el-icon>
+                  <small>HEIC</small>
+                </span>
+                <!-- Imagen normal -->
+                <img
+                  v-else-if="scope.row.url"
+                  :src="scope.row.url"
+                  class="foto-thumbnail"
+                  @click="abrirFoto(scope.row)"
+                  @error="handleImageError(scope.row)"
+                  loading="lazy"
+                />
+                <span v-else>-</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="Participa" width="100">
+              <template #default="scope">
+                <el-switch
+                  v-model="scope.row.participando"
+                  @change="toggleParticipa(scope.row)"
+                />
+              </template>
+            </el-table-column>
+            <el-table-column label="Ganador" width="100">
+              <template #default="scope">
+                <el-tag v-if="scope.row.winner" type="success">Sí</el-tag>
+                <el-tag v-else type="info">No</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="dni" label="Identidad" width="150" />
+            <el-table-column prop="phone" label="Teléfono" width="130" />
+            <el-table-column prop="created_at" label="Fecha" width="140">
+              <template #default="scope">
+                {{ formatDate(scope.row.created_at) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="Acciones" width="100" fixed="right">
+              <template #default="scope">
+                <el-button
+                  type="danger"
+                  size="small"
+                  @click="eliminarRegistro(scope.row)"
+                  :icon="Delete"
+                />
+              </template>
+            </el-table-column>
+          </el-table>
+
+          <!-- Modal para ver foto grande -->
+          <el-dialog v-model="showFotoModal" title="Foto" width="90%">
+            <img :src="fotoSeleccionada" class="foto-grande" />
+          </el-dialog>
+
+          <!-- Paginación -->
+          <div class="pagination-container" v-if="totalRecords > 0">
+            <el-pagination
+              background
+              v-model:current-page="page"
+              v-model:page-size="pageSize"
+              :total="totalRecords"
+              layout="total, sizes, prev, pager, next, jumper"
+              :page-sizes="[50, 100, 200]"
+              @current-change="handlePageChange"
+              @size-change="handleSizeChange"
+            />
+          </div>
+
+          <!-- Mostrar mensaje cuando no hay datos -->
+          <div v-if="winners.length === 0 && !isLoading" class="no-data">
+            No hay datos disponibles.
+          </div>
+
+          <template #fallback>
+            <div class="loading-container">
+              <span>Cargando...</span>
+            </div>
+          </template>
+        </ClientOnly>
       </div>
     </div>
   </template>
-  
+
   <script setup>
   import { ref, onMounted, onUnmounted } from 'vue'
   import { useNuxtApp } from '#app'
-  import { ElMessage, ElLoading, ElMessageBox } from 'element-plus'
+  import { ElMessage, ElMessageBox } from 'element-plus'
   import { Delete, Picture, Loading } from '@element-plus/icons-vue'
   import Papa from 'papaparse'  // Para generar el CSV
-  
+
   // Definir el nombre de la tabla como una constante
   const PARTICIPANTS_TABLE = 'ceteco_genio'
-  
+
   // Función para formatear la fecha y hora
   const formatDate = (dateString) => {
     if (!dateString) return ''
@@ -163,10 +174,10 @@
     const year = date.getFullYear().toString().slice(-2)
     const hours = date.getHours().toString().padStart(2, '0')
     const minutes = date.getMinutes().toString().padStart(2, '0')
-    
+
     return `${day}/${month}/${year} ${hours}:${minutes}`
   }
-  
+
   const { $supabase } = useNuxtApp()
   const winners = ref([])
   const page = ref(1)
@@ -336,7 +347,7 @@
 
       const { data, error, count } = await query
         .range((currentPage - 1) * pageSize.value, currentPage * pageSize.value - 1)
-  
+
       if (error) {
         console.error('Error fetching winners:', error)
         ElMessage.error('Error al obtener los datos')
@@ -360,20 +371,20 @@
       isLoading.value = false
     }
   }
-  
+
   // Función para manejar el cambio de fecha
   const handleDateChange = () => {
     page.value = 1  // Resetear a la primera página
     fetchWinners()
   }
-  
+
   // Función para limpiar el filtro de fecha
   const clearDateFilter = () => {
     dateRange.value = []
     page.value = 1  // Resetear a la primera página
     fetchWinners()
   }
-  
+
   // Función para manejar el cambio de página
   const handlePageChange = () => {
     fetchWinners()
@@ -384,7 +395,7 @@
     page.value = 1  // Resetear a la primera página
     fetchWinners()
   }
-  
+
   // Función para descargar CSV
   const downloadCSV = async () => {
     isDownloading.value = true
@@ -403,7 +414,7 @@
       }
 
       const { data, error } = await query
-  
+
       if (error) {
         console.error('Error fetching all data:', error)
         ElMessage.error('Error al descargar los datos')
@@ -428,7 +439,7 @@
       isDownloading.value = false
     }
   }
-  
+
   // Variable para guardar la suscripción
   let realtimeSubscription = null
 
@@ -461,7 +472,7 @@
     }
   })
   </script>
-  
+
   <style scoped>
   .main-body {
     display: flex;
@@ -469,11 +480,11 @@
     min-height: 100vh;
     background-color: #808080;
   }
-  
+
   .logo {
     width: 200px;
   }
-  
+
   .container {
     flex-grow: 1;
     background-color: white;
@@ -485,7 +496,7 @@
     flex-direction: column;
     margin-bottom: 10px !important;
   }
-  
+
   .maxwidth {
     max-width: 1600px;
     margin: auto;
@@ -556,18 +567,18 @@
     max-height: 100vh;
     object-fit: contain;
   }
-  
+
   .header-container {
     display: flex;
     padding-bottom: 20px;
   }
-  
+
   .date-filter {
     display: flex;
     align-items: center;
     gap: 10px;
   }
-  
+
   .header-right {
     display: flex;
     align-items: center;
@@ -575,14 +586,14 @@
     width: 100%;
     justify-content: space-between;
   }
-  
+
   /* Asegurarse de que el contenido de las celdas no se desborde */
   :deep(.el-table .cell) {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  
+
   .no-data {
     text-align: center;
     padding: 20px;
@@ -598,14 +609,24 @@
     border-radius: 8px;
     margin-top: 15px;
   }
-  
+
+  .loading-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 40px;
+    color: #909399;
+    font-size: 16px;
+  }
+
   @media (max-width: 768px) {
     .header-container {
       flex-direction: column;
       align-items: stretch;
       gap: 10px;
     }
-  
+
     .date-filter, .header-right {
       width: 100%;
       justify-content: space-between;
