@@ -126,12 +126,12 @@
         <div class="pagination-container" v-if="totalRecords > 0">
           <el-pagination
             background
-            @current-change="handlePageChange"
-            :current-page="page"
-            :page-size="pageSize"
+            v-model:current-page="page"
+            v-model:page-size="pageSize"
             :total="totalRecords"
             layout="total, sizes, prev, pager, next, jumper"
             :page-sizes="[50, 100, 200]"
+            @current-change="handlePageChange"
             @size-change="handleSizeChange"
           />
         </div>
@@ -375,14 +375,12 @@
   }
   
   // Función para manejar el cambio de página
-  const handlePageChange = (newPage) => {
-    page.value = newPage
+  const handlePageChange = () => {
     fetchWinners()
   }
-  
+
   // Función para manejar el cambio de tamaño de página
-  const handleSizeChange = (newSize) => {
-    pageSize.value = newSize
+  const handleSizeChange = () => {
     page.value = 1  // Resetear a la primera página
     fetchWinners()
   }

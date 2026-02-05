@@ -103,16 +103,16 @@
       <!-- Paginación -->
       <el-pagination
         v-if="totalRecords > pageSize"
-        @current-change="handlePageChange"
-        :current-page="page"
-        :page-size="pageSize"
+        background
+        v-model:current-page="page"
+        v-model:page-size="pageSize"
         :total="totalRecords"
         layout="total, sizes, prev, pager, next"
         :page-sizes="[50, 100, 200]"
+        @current-change="handlePageChange"
         @size-change="handleSizeChange"
         style="margin-top: 20px;"
-      >
-      </el-pagination>
+      />
 
       <!-- Mostrar mensaje cuando no hay datos -->
       <div v-if="winners.length === 0 && !isLoading" class="no-data">
@@ -166,7 +166,7 @@ const subscribeToRealtime = () => {
       },
       (payload) => {
         console.log('Realtime change received:', payload)
-        fetchWinners(page.value)
+        fetchWinners()
         if (payload.eventType === 'INSERT') {
           ElMessage.success('¡Nuevo ganador registrado!')
         }
@@ -176,8 +176,9 @@ const subscribeToRealtime = () => {
 }
 
 // Función para obtener los datos con paginación y filtro de fecha
-const fetchWinners = async (page = 1) => {
+const fetchWinners = async () => {
   isLoading.value = true
+  const currentPage = page.value
   try {
     let query = $supabase
       .from(WINNERS_TABLE)
@@ -192,7 +193,7 @@ const fetchWinners = async (page = 1) => {
     }
 
     const { data, error, count } = await query
-      .range((page - 1) * pageSize.value, page * pageSize.value - 1)
+      .range((currentPage - 1) * pageSize.value, currentPage * pageSize.value - 1)
 
     if (error) {
       console.error('Error fetching winners:', error)
@@ -222,13 +223,11 @@ const clearDateFilter = () => {
   fetchWinners()
 }
 
-const handlePageChange = (newPage) => {
-  page.value = newPage
-  fetchWinners(newPage)
+const handlePageChange = () => {
+  fetchWinners()
 }
 
-const handleSizeChange = (newSize) => {
-  pageSize.value = newSize
+const handleSizeChange = () => {
   page.value = 1
   fetchWinners()
 }
